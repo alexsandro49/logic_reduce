@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import logo from '@/assets/circuitry.svg'
 import moonIcon from '@/assets/moon.svg'
+import sunIcon from '@/assets/sun.svg'
 import paintRollerIcon from '@/assets/paint-roller.svg'
+import { ref } from 'vue'
+
+const darkTheme = ref();
 </script>
 
 <template>
@@ -17,7 +21,10 @@ import paintRollerIcon from '@/assets/paint-roller.svg'
     </nav>
 
     <div class="header-actions">
-      <button class="icon-button" type="button" aria-label="Alternar tema">
+      <button v-if="darkTheme == true" @click="darkTheme = !darkTheme" class="icon-button" type="button" aria-label="Alternar tema">
+        <img :src="sunIcon" alt="Moon icon" aria-hidden="true" />
+      </button>
+      <button v-else class="icon-button" @click="darkTheme = !darkTheme" type="button" aria-label="Alternar tema">
         <img :src="moonIcon" alt="Moon icon" aria-hidden="true" />
       </button>
       <button class="icon-button" type="button" aria-label="Imprimir página">
@@ -32,13 +39,13 @@ import paintRollerIcon from '@/assets/paint-roller.svg'
   align-items: center;
   background: var(--color-dark-cyan);
   border: 1.5px solid #222;
-  border-radius: 0px 0px 20px 20px;
   box-sizing: border-box;
   display: flex;
   gap: 14px;
   min-height: 74px;
   padding: 13px 14px 13px 18px;
   width: 100%;
+  font-family: var(--font-roboto);
 }
 
 .brand {
@@ -68,7 +75,9 @@ import paintRollerIcon from '@/assets/paint-roller.svg'
 .icon-button {
   border: 1.5px solid #222;
   color: #222;
-  font: 400 18px/1.1 'Roboto Mono', 'Courier New', monospace;
+  font-family: var(--font-roboto);
+  font-size: 1.1em;
+  font-weight: 500;
 }
 
 .navigation-link {
@@ -92,7 +101,6 @@ import paintRollerIcon from '@/assets/paint-roller.svg'
 .icon-button:hover,
 .icon-button:focus-visible {
   outline: 2px solid var(--color-light-cyan);
-  outline-offset: 2px;
 }
 
 .header-actions {
