@@ -6,6 +6,16 @@ import paintRollerIcon from '@/assets/paint-roller.svg'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+const props = defineProps<{
+  activeWindowButton: number;
+}>();
+
+const windowButtons = [
+  {name: "simplificação", route: ""},
+  {name: "tabela verdade", route: "truth-table"},
+  {name: "manual", route: "manual"}
+];
+
 const darkTheme = ref();
 
 const router = useRouter();
@@ -17,10 +27,8 @@ const router = useRouter();
       <img :src="logo" alt="Program logo" aria-hidden="true" />
     </a>
 
-    <nav class="main-navigation" aria-label="Navegação principal">
-      <a class="navigation-link is-active" @click="router.push('/')">Simplificação</a>
-      <a class="navigation-link" @click="router.push('/truth-table')">Tabela verdade</a>
-      <a class="navigation-link">Manual</a>
+    <nav v-for="(link, index) in windowButtons" v-key="index" class="main-navigation" aria-label="Navegação principal">
+      <a :class="{'is-active': activeWindowButton == index}" class="navigation-link" @click="router.push(`/${link.route}`)">{{ link.name }}</a>
     </nav>
 
     <div class="header-actions">
@@ -104,6 +112,7 @@ const router = useRouter();
 .icon-button:hover,
 .icon-button:focus-visible {
   outline: 2px solid var(--color-light-cyan);
+  cursor: pointer;
 }
 
 .header-actions {

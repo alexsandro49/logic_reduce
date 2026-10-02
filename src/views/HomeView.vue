@@ -35,7 +35,7 @@ const steps: ReductionStep[] = [
 
 <template>
   <main class="page-shell">
-    <HeaderComponent />
+    <HeaderComponent :active-window-button="0"/>
     <section class="workspace px-7" aria-label="Simplificação de expressão booleana">
       <div class="controls-row">
         <label class="field expression-field">
@@ -112,8 +112,8 @@ input, select, .result-value { @apply box-border h-[45px] rounded-[10px] border-
 .notation-field { @apply relative max-[760px]:flex-1 after:pointer-events-none after:absolute after:right-[14px] after:bottom-[18px] after:border-x-[5px] after:border-t-[7px] after:border-x-transparent after:border-t-[#242424]; }
 .notation-field select { @apply w-41 appearance-none bg-light-cyan pr-10 text-[#242424] disabled:opacity-100 max-[760px]:w-full; }
 .notation-field select option { @apply bg-light-cyan text-[#242424]; }
-.action-button, .page-footer button { @apply flex h-[45px] w-[45px] items-center justify-center rounded-[10px] border-[1.5px] border-[#242424] bg-turquoise p-0 text-[27px] leading-none font-bold hover:-translate-y-px hover:brightness-[.96] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-turquoise; }
-.action-button-img { @apply w-7 h-7 cursor-pointer}
+.action-button, .page-footer button { @apply flex h-[45px] w-[45px] items-center justify-center rounded-[10px] border-[1.5px] border-[#242424] bg-turquoise p-0 text-[27px] leading-none font-bold hover:-translate-y-px hover:brightness-[.96] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-turquoise cursor-pointer; }
+.action-button-img { @apply w-7 h-7}
 .ufal-button-img { @apply w-10 h-10 cursor-pointer }
 .steps-section { @apply mt-7 flex min-h-0 flex-1 flex-col; }
 .steps-card { @apply mt-[7px] min-h-0 flex-1 overflow-x-hidden overflow-y-auto box-border rounded-[23px] border-[1.5px] border-[#242424] bg-light-cyan px-8 py-[27px] max-[760px]:px-[18px] max-[760px]:py-[23px]; }
