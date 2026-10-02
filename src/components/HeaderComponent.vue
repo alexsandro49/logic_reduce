@@ -4,8 +4,11 @@ import moonIcon from '@/assets/moon.svg'
 import sunIcon from '@/assets/sun.svg'
 import paintRollerIcon from '@/assets/paint-roller.svg'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const darkTheme = ref();
+
+const router = useRouter();
 </script>
 
 <template>
@@ -15,9 +18,9 @@ const darkTheme = ref();
     </a>
 
     <nav class="main-navigation" aria-label="Navegação principal">
-      <a class="navigation-link is-active" href="#simplificacao">Simplificação</a>
-      <a class="navigation-link" href="#tabela-verdade">Tabela verdade</a>
-      <a class="navigation-link" href="#manual">Manual</a>
+      <a class="navigation-link is-active" @click="router.push('/')">Simplificação</a>
+      <a class="navigation-link" @click="router.push('/truth-table')">Tabela verdade</a>
+      <a class="navigation-link">Manual</a>
     </nav>
 
     <div class="header-actions">
