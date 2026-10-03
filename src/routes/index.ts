@@ -1,5 +1,5 @@
-import { createRouter, createWebHashHistory, createWebHistory } from "vue-router";
-import HomeView from "../views/HomeView.vue";
+import { createRouter, createWebHashHistory } from "vue-router";
+import Home from "../views/Home.vue";
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -7,7 +7,7 @@ const router = createRouter({
     {
       path: "/",
       name: "home",
-      component: HomeView,
+      component: Home,
     },
     {
       path: "/truth-table",
@@ -16,6 +16,11 @@ const router = createRouter({
         requiresAuth: true,
       },
       component: () => import("@/views/TruthTable.vue"),
+    },
+    {
+      path: "/manual",
+      name: "manual",
+      component: () => import("@/views/Manual.vue"),
     },
   ],
 });

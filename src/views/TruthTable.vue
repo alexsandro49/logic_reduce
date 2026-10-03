@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import HeaderComponent from '../components/HeaderComponent.vue'
+import HeaderComponent from '../components/Header.vue'
 import checkIcon from '@/assets/check-fat.svg'
 import deleteIcon from '@/assets/trash.svg'
 import refreshIcon from '@/assets/arrows-clockwise.svg'

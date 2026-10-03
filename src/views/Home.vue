@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import HeaderComponent from '../components/HeaderComponent.vue'
+import HeaderComponent from '../components/Header.vue'
 
 type ReductionStep = { title: string; expression: string; description: string }
 
