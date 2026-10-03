@@ -1,22 +1,28 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { openUrl } from '@tauri-apps/plugin-opener';
 import HeaderComponent from '@/components/Header.vue'
 
 type Rule = { name: string; description: string; examples: string[]; notes: string[] }
 const rules: Rule[] = [
-  { name: 'Identidade', description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas lobortis turpis non est pulvinar, ut facilisis sapien ultrices. Cras vitae mattis quam.', examples: ['A + 0 ⇒ A', 'A & 1 ⇒ A'], notes: ['Lorem ipsum dolor sit amet, consectetur adipiscing elit.', 'Maecenas lobortis turpis non est pulvinar, ut facilisis sapien ultrices.'] },
-  { name: 'Dominação', description: 'Valores dominantes definem o resultado de uma operação booleana.', examples: ['A + 1 ⇒ 1', 'A & 0 ⇒ 0'], notes: ['O termo dominante depende do operador utilizado.'] },
-  { name: 'Idempotência', description: 'A repetição de um termo não muda o resultado da expressão.', examples: ['A + A ⇒ A', 'A & A ⇒ A'], notes: ['Termos repetidos podem ser removidos.'] },
-  { name: 'Complemento', description: 'Uma variável e sua negação formam um complemento.', examples: ['A + ~A ⇒ 1', 'A & ~A ⇒ 0'], notes: ['A negação é representada pelo símbolo ~.'] },
+  { name: 'Identidade', description: 'Operar com o elemento neutro não altera o valor.', examples: ['A + 0 ⇒ A', 'A & 1 ⇒ A'], notes: ['Útil para remover constantes que não alteram o resultado da expressão.'] },
+  { name: 'Dominação', description: 'O valor dominante determina o resultado da operação.', examples: ['A + 1 ⇒ 1', 'A & 0 ⇒ 0'], notes: ['O termo dominante depende do operador utilizado.', 'O valor dominante torna os demais termos da operação irrelevantes.'] },
+  { name: 'Idempotência', description: 'A repetição de um termo não muda o resultado da expressão.', examples: ['A + A ⇒ A', 'A & A ⇒ A'], notes: ['Termos repetidos podem ser reduzidos a uma única ocorrência.'] },
+  { name: 'Complemento', description: 'Uma variável combinada com seu complemento produz sempre 1 no OU e 0 no E.', examples: ['A + ~A ⇒ 1', 'A & ~A ⇒ 0'], notes: ['A negação é representada pelo símbolo ~.', 'Uma variável e sua negação sempre possuem valores opostos.'] },
   { name: 'D. Negação', description: 'Duas negações consecutivas se anulam.', examples: ['~(~A) ⇒ A'], notes: ['A expressão retorna ao seu valor original.'] },
-  { name: 'Comutativa', description: 'A ordem dos termos não altera o resultado.', examples: ['A + B ⇒ B + A', 'A & B ⇒ B & A'], notes: ['Reorganize os termos quando necessário.'] },
-  { name: 'Associativa', description: 'O agrupamento das operações não altera a expressão.', examples: ['(A + B) + C ⇒ A + (B + C)', '(A & B) & C ⇒ A & (B & C)'], notes: ['A regra se aplica a operadores iguais.'] },
-  { name: 'Distributiva', description: 'Permite expandir ou fatorar uma expressão.', examples: ['A & (B + C) ⇒ (A & B) + (A & C)'], notes: ['Use-a para expor novas simplificações.'] },
-  { name: 'Absorção', description: 'Um termo pode absorver outro mais específico.', examples: ['A + (A & B) ⇒ A', 'A & (A + B) ⇒ A'], notes: ['A variável comum determina o resultado.'] },
-  { name: 'De Morgan', description: 'A negação troca o operador e nega cada termo.', examples: ['~(A + B) ⇒ ~A & ~B', '~(A & B) ⇒ ~A + ~B'], notes: ['A lei ajuda a mover negações para dentro de parênteses.'] },
+  { name: 'Comutativa', description: 'A ordem dos termos não altera o resultado.', examples: ['A + B ⇒ B + A', 'A & B ⇒ B & A'], notes: ['Pode ser usada para reorganizar os termos e facilitar a aplicação de outras regras.'] },
+  { name: 'Associativa', description: 'O agrupamento das operações não altera o resultado quando a operação é a mesma.', examples: ['(A + B) + C ⇒ A + (B + C)', '(A & B) & C ⇒ A & (B & C)'], notes: ['Permite reagrupar termos de uma mesma operação sem alterar o resultado.'] },
+  { name: 'Distributiva', description: 'Permite distribuir uma operação sobre outra para reorganizar ou simplificar a expressão.', examples: ['A & (B + C) ⇒ (A & B) + (A & C)'], notes: ['Permite distribuir uma operação sobre outra para reorganizar ou simplificar a expressão.'] },
+  { name: 'Absorção', description: 'Um termo mais simples pode absorver outro termo que já depende dele.', examples: ['A + (A & B) ⇒ A', 'A & (A + B) ⇒ A'], notes: ['A variável comum determina o resultado.', 'Remove termos redundantes que não influenciam o resultado final.'] },
+  { name: 'De Morgan', description: 'Ao negar uma expressão, troca o operador e nega cada termo.', examples: ['~(A + B) ⇒ ~A & ~B', '~(A & B) ⇒ ~A + ~B'], notes: ['A lei ajuda a mover negações para dentro de parênteses.'] },
 ]
 const selectedName = ref('Identidade')
 const selectedRule = computed(() => rules.find((rule) => rule.name === selectedName.value) ?? rules[0])
+
+async function openExternalLink(event: MouseEvent, url: string) {
+  event.preventDefault();
+  await openUrl(url);
+};
 </script>
 
 <template>
@@ -24,11 +30,11 @@ const selectedRule = computed(() => rules.find((rule) => rule.name === selectedN
     <HeaderComponent :active-window-button="2" />
     <div class="manual-layout">
       <aside class="sidebar" aria-label="Regras da álgebra booleana">
-        <h1>Regras Álgebra<br>Booleana</h1>
+        <h1>Propriedades</h1>
         <nav>
           <button v-for="rule in rules" :key="rule.name" class="rule-link" :class="{ active: selectedName === rule.name }" :aria-current="selectedName === rule.name ? 'page' : undefined" @click="selectedName = rule.name">{{ rule.name }}</button>
         </nav>
-        <div class="topic"><span>Sobre o tema:</span><a href="https://pt.wikipedia.org/wiki/%C3%81lgebra_booleana" target="_blank" rel="noopener">Álgebra Booleana</a></div>
+        <div class="topic"><span>Sobre o tema:</span><a href="https://pt.wikipedia.org/wiki/%C3%81lgebra_booleana" @click="openExternalLink($event, 'https://pt.wikipedia.org/wiki/%C3%81lgebra_booleana')">Álgebra Booleana</a></div>
       </aside>
 
       <article class="content">
@@ -46,17 +52,9 @@ const selectedRule = computed(() => rules.find((rule) => rule.name === selectedN
 @reference "../assets/main.css";
 :global(html), :global(body), :global(#app) { min-height: 100%; }
 .manual-page { min-height: 100dvh; overflow: hidden; background: white; color: #242424; font-family: var(--font-roboto); }
-.manual-page :deep(.app-header) { gap: 11px; min-height: 59px; padding: 8px 12px 8px 14px; }
-.manual-page :deep(.brand) { flex-basis: 32px; height: 32px; width: 32px; }
-.manual-page :deep(.brand img) { height: 38px; width: 38px; }
-.manual-page :deep(.main-navigation) { gap: 10px; }
-.manual-page :deep(.navigation-link) { min-height: 36px; padding: 0 9px; font-size: 14px; }
-.manual-page :deep(.header-actions) { gap: 10px; }
-.manual-page :deep(.icon-button) { height: 36px; width: 36px; }
-.manual-page :deep(.icon-button img) { height: 22px; width: 22px; }
-.manual-layout { display: flex; min-height: calc(100dvh - 59px); border: 1.5px solid #222; border-top: 0; }
+.manual-layout { display: flex; min-height: calc(100dvh - 74px); border: 1.5px solid #222; border-top: 0; }
 .sidebar { display: flex; width: 231px; flex: 0 0 231px; flex-direction: column; border-right: 1.5px solid #222; background: var(--color-light-cyan); }
-.sidebar h1 { margin: 0; padding: 23px 12px 21px; border-bottom: 1.5px solid #222; font-size: 19px; font-weight: 800; line-height: 1.28; text-align: center; }
+.sidebar h1 { margin: 0; padding: 23px 12px 21px; border-bottom: 1.5px solid #222; font-size: 19px; font-weight: 800; font-family: var(--font-roboto); text-transform: uppercase; line-height: 1.28; text-align: center; }
 .sidebar nav { display: flex; flex-direction: column; }
 .rule-link { min-height: 46px; border: 0; border-bottom: 1.5px solid #222; background: transparent; color: #282d2d; cursor: pointer; font: 400 25px/1 var(--font-roboto); letter-spacing: .2px; padding: 0 11px; text-align: left; }
 .rule-link:hover, .rule-link:focus-visible { background: #c9f0e9; outline: none; }

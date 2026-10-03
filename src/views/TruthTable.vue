@@ -71,7 +71,6 @@ function resetTable() { expression.value = '~((~A + B) & (~B + C))'; display.val
 
 :global(html), :global(body), :global(#app) { min-height: 100%; }
 .truth-table-page { display: flex; box-sizing: border-box; min-height: 100dvh; flex-direction: column; margin: 0; padding: 0; background: #fff; color: #282d2d; font-family: var(--font-roboto); }
-.truth-table-page :deep(.app-header) { min-height: 78px; }
 .truth-table-workspace { display: flex; box-sizing: border-box; min-height: 0; flex: 1; flex-direction: column; border: 1.5px solid #222; border-top: 0; background: #fff; padding: 31px 30px 28px; }
 .table-controls, .control-actions { display: flex; align-items: end; gap: 13px; }
 .control-field { display: flex; flex-direction: column; gap: 6px; }

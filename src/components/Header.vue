@@ -93,18 +93,19 @@ const router = useRouter();
 
 .navigation-link {
   align-items: center;
-  background: var(--color-turquoise);
+  background: transparent;
   border-radius: 11px;
   display: flex;
   min-height: 44px;
   padding: 0 11px;
   text-decoration: none;
   text-transform: uppercase;
+  font-weight: 800;
   white-space: nowrap;
 }
 
 .navigation-link.is-active {
-  background: var(--color-light-cyan);
+  background: var(--color-turquoise);
 }
 
 .navigation-link:hover,
