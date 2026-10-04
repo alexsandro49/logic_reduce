@@ -6,11 +6,15 @@ type ReductionStep = { title: string; expression: string; description: string }
 import checkIcon from '@/assets/check-fat.svg'
 import deleteIcon from '@/assets/trash.svg'
 import refreshIcon from '@/assets/arrows-clockwise.svg'
-import copyIcon from '@/assets/copy.svg'
+import copyBlackIcon from '@/assets/copy-black.svg'
+import copyCyanIcon from '@/assets/copy-cyan.svg'
 import ufalIcon from '@/assets/ufal-logo.svg'
 import bookIcon from '@/assets/book.svg'
 import githubIcon from '@/assets/github-logo.svg'
 import { ref } from 'vue';
+import { useConfigStore } from '../stores/config.ts';
+
+const configStore = useConfigStore();
 
 const expression = '~((~A + B) & (~B + C))'
 const result = '(~A & ~B) + (B & ~C)'
@@ -34,17 +38,17 @@ const steps: ReductionStep[] = [
 </script>
 
 <template>
-  <main class="page-shell">
+  <main class="page-shell" :class="{dark: configStore.darkTheme }">
     <HeaderComponent :active-window-button="0"/>
     <section class="workspace px-7" aria-label="Simplificação de expressão booleana">
       <div class="controls-row">
         <label class="field expression-field">
-          <span class="font-bold">Expressão booleana:</span>
+          <span class="font-text">Expressão booleana:</span>
           <input :value="expression" type="text" aria-label="Expressão booleana" />
         </label>
         <div class="notation-control">
           <label class="field notation-field">
-            <span class="font-bold">Notação:</span>
+            <span class="font-text">Notação:</span>
             <select :value="notation" aria-label="Notação">
               <option v-for="notation in notations" :value="notation.value" :key="notation.value">
                 {{ notation.text }}
@@ -63,7 +67,7 @@ const steps: ReductionStep[] = [
         </div>
       </div>
       <section class="steps-section" aria-labelledby="steps-title">
-        <h1 id="steps-title" class="font-bold">Passos:</h1>
+        <h1 id="steps-title" class="font-text">Passos:</h1>
         <div class="steps-card">
           <article v-for="(step, index) in steps" :key="step.title" class="step">
             <h2>{{ index + 1 }}. <span>{{ step.title }}</span></h2>
@@ -73,10 +77,11 @@ const steps: ReductionStep[] = [
         </div>
       </section>
       <section class="result-row" aria-label="Resultado simplificado">
-        <h2 class="font-bold">Forma simplificada:</h2>
+        <h2 class="font-text">Forma simplificada:</h2>
         <output class="result-value">{{ result }}</output>
         <button class="copy-button" type="button" aria-label="Alternar tema">
-            <img :src="copyIcon" alt="Moon icon" aria-hidden="true" />
+          <img v-if="configStore.darkTheme" :src="copyCyanIcon" alt="Moon icon" aria-hidden="true" />
+          <img v-else :src="copyBlackIcon" alt="Moon icon" aria-hidden="true" />
         </button>
       </section>
     </section>
@@ -102,7 +107,7 @@ const steps: ReductionStep[] = [
 
 .page-shell { @apply relative flex h-dvh max-h-dvh min-h-0 flex-col overflow-hidden box-border rounded-b-[20px] bg-white font-roboto text-[#242424] max-[760px]:px-3.5; }
 .page-shell :deep(.app-header) { @apply shrink-0; }
-.workspace { @apply flex min-h-0 flex-1 flex-col pt-[43px] pb-[97px] max-[760px]:pt-7; }
+.workspace { @apply flex min-h-0 flex-1 flex-col pt-[43px] pb-[97px] max-[760px]:pt-7 dark:bg-gunmetal; }
 .controls-row { @apply flex shrink-0 items-end gap-3.5 max-[760px]:flex-wrap max-[760px]:items-stretch; }
 .field { @apply flex flex-col gap-[7px]; }
 .field > span, .steps-section h1, .result-row h2 { @apply text-[19px] tracking-[.1px] uppercase; }
@@ -115,6 +120,7 @@ input, select, .result-value { @apply box-border h-[45px] rounded-[10px] border-
 .action-button, .page-footer button { @apply flex h-[45px] w-[45px] items-center justify-center rounded-[10px] border-[1.5px] border-[#242424] bg-turquoise p-0 text-[27px] leading-none font-bold hover:-translate-y-px hover:brightness-[.96] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-turquoise cursor-pointer; }
 .action-button-img { @apply w-7 h-7}
 .ufal-button-img { @apply w-10 h-10 cursor-pointer }
+.font-text { @apply font-black dark:text-light-cyan }
 .steps-section { @apply mt-7 flex min-h-0 flex-1 flex-col; }
 .steps-card { @apply mt-[7px] min-h-0 flex-1 overflow-x-hidden overflow-y-auto box-border rounded-[23px] border-[1.5px] border-[#242424] bg-light-cyan px-8 py-[27px] max-[760px]:px-[18px] max-[760px]:py-[23px]; }
 .step + .step { @apply mt-8; }

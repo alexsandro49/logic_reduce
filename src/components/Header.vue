@@ -3,8 +3,8 @@ import logo from '@/assets/circuitry.svg'
 import moonIcon from '@/assets/moon.svg'
 import sunIcon from '@/assets/sun.svg'
 import paintRollerIcon from '@/assets/paint-roller.svg'
-import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useConfigStore } from '../stores/config'
 
 const props = defineProps<{
   activeWindowButton: number;
@@ -16,7 +16,7 @@ const windowButtons = [
   {name: "manual", route: "manual"}
 ];
 
-const darkTheme = ref();
+const configStore = useConfigStore();
 
 const router = useRouter();
 </script>
@@ -32,10 +32,10 @@ const router = useRouter();
     </nav>
 
     <div class="header-actions">
-      <button v-if="darkTheme == true" @click="darkTheme = !darkTheme" class="icon-button" type="button" aria-label="Alternar tema">
+      <button v-if="configStore.darkTheme == true" @click="configStore.darkTheme = !configStore.darkTheme" class="icon-button" type="button" aria-label="Alternar tema">
         <img :src="sunIcon" alt="Moon icon" aria-hidden="true" />
       </button>
-      <button v-else class="icon-button" @click="darkTheme = !darkTheme" type="button" aria-label="Alternar tema">
+      <button v-else class="icon-button" @click="configStore.darkTheme = !configStore.darkTheme" type="button" aria-label="Alternar tema">
         <img :src="moonIcon" alt="Moon icon" aria-hidden="true" />
       </button>
       <button class="icon-button" type="button" aria-label="Imprimir página">

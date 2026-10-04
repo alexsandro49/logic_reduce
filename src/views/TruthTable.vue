@@ -4,11 +4,14 @@ import HeaderComponent from '../components/Header.vue'
 import checkIcon from '@/assets/check-fat.svg'
 import deleteIcon from '@/assets/trash.svg'
 import refreshIcon from '@/assets/arrows-clockwise.svg'
+import { useConfigStore } from '../stores/config.ts'
 
 type TruthTableRow = {
   a: number; b: number; c: number; notA: number; notB: number
   notAOrB: number; notBOrC: number; conjunction: number; result: number
 }
+
+const configStore = useConfigStore();
 
 const expression = ref('~((~A + B) & (~B + C))')
 const display = ref('complete')
@@ -34,7 +37,7 @@ function resetTable() { expression.value = '~((~A + B) & (~B + C))'; display.val
 </script>
 
 <template>
-  <main class="truth-table-page">
+  <main class="truth-table-page" :class="{ dark: configStore.darkTheme }">
     <HeaderComponent :active-window-button="1"/>
     <section class="truth-table-workspace" aria-label="Tabela verdade">
       <div class="table-controls">
@@ -51,7 +54,7 @@ function resetTable() { expression.value = '~((~A + B) & (~B + C))'; display.val
             <table>
                 <thead>
                     <tr>
-                        <th v-for="column in columns" :key="column.key" scope="col"> {{ column.label }}</th>
+                        <th v-for="column in columns" :key="column.key" scope="col">{{ column.label }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -69,34 +72,41 @@ function resetTable() { expression.value = '~((~A + B) & (~B + C))'; display.val
 <style scoped>
 @reference "../assets/main.css";
 
-:global(html), :global(body), :global(#app) { min-height: 100%; }
-.truth-table-page { display: flex; box-sizing: border-box; min-height: 100dvh; flex-direction: column; margin: 0; padding: 0; background: #fff; color: #282d2d; font-family: var(--font-roboto); }
-.truth-table-workspace { display: flex; box-sizing: border-box; min-height: 0; flex: 1; flex-direction: column; border: 1.5px solid #222; border-top: 0; background: #fff; padding: 31px 30px 28px; }
-.table-controls, .control-actions { display: flex; align-items: end; gap: 13px; }
-.control-field { display: flex; flex-direction: column; gap: 6px; }
-.control-field > span { color: #303434; font-size: 19px; font-weight: 800; letter-spacing: .1px; text-transform: uppercase; }
-input, select { box-sizing: border-box; height: 49px; border: 1.5px solid #222; border-radius: 11px; background: var(--color-light-cyan); color: #202525; font-family: var(--font-roboto); font-size: 20px; outline: none; }
-input:focus-visible, select:focus-visible, button:focus-visible { outline: 3px solid var(--color-turquoise); outline-offset: 2px; }
-.expression-control input { width: 308px; padding: 0 13px; }
-.display-control { position: relative; }
-.display-control::after { position: absolute; right: 10px; bottom: 17px; width: 0; height: 0; border-top: 9px solid #222; border-right: 5px solid transparent; border-left: 5px solid transparent; content: ''; pointer-events: none; }
-.display-control select { width: 150px; appearance: none; padding: 0 24px 0 8px; text-transform: uppercase; }
-.action-button { display: grid; width: 48px; height: 48px; place-items: center; border: 1.5px solid #222; border-radius: 11px; background: var(--color-turquoise); cursor: pointer; }
-.action-button:hover { filter: brightness(.96); transform: translateY(-1px); }
-.action-button img { width: 27px; height: 27px; }
-.truth-table-card { box-sizing: border-box; min-height: 768px; flex: 1; margin-top: 13px; padding: 28px 30px 60px; overflow: hidden; border: 1.5px solid #222; border-radius: 23px; background: var(--color-light-cyan); }
-.table-scroll { overflow-x: auto; }
-table { width: 100%; min-width: 980px; border: 1.5px solid #222; border-collapse: separate; border-spacing: 0; border-radius: 23px; font-size: 42px; line-height: 1; text-align: center; }
-th, td { height: 73px; padding: 0 12px; border-bottom: 1.5px solid #222; white-space: nowrap; }
-th { height: 72px; background: var(--color-dark-slate-grey); color: #d8efeb; font-weight: 500; }
-td { color: #303434; font-weight: 400; }
-tbody tr.highlighted td { background: var(--color-dark-cyan); color: #d8efeb; }
-tbody tr:last-child td { border-bottom: 0; }
-th:nth-child(1) { border-radius: 23px 0px 0px 0px;}
-th:last-child { border-radius: 0px 23px 0px 0px;}
+:global(html), :global(body), :global(#app) { @apply min-h-full; }
+.truth-table-page { @apply box-border flex min-h-dvh flex-col m-0 bg-white p-0 font-roboto text-[#282d2d]; }
+.truth-table-workspace { @apply box-border flex min-h-0 flex-1 flex-col border-[1.5px] border-t-0 border-[#222] bg-white px-[30px] pt-[31px] pb-[28px] dark:bg-gunmetal; }
+.table-controls, .control-actions { @apply flex items-end gap-[13px]; }
+.control-field { @apply flex flex-col gap-[6px]; }
+.control-field > span { @apply text-[19px] font-extrabold uppercase tracking-[.1px] text-[#303434] dark:text-light-cyan; }
+input, select { @apply box-border h-[49px] rounded-[11px] border-[1.5px] border-[#222] bg-light-cyan font-roboto text-[20px] text-[#202525] outline-none; }
+input:focus-visible, select:focus-visible, button:focus-visible { @apply outline-[3px] outline-turquoise outline-offset-2; }
+.expression-control input { @apply w-[308px] px-[13px]; }
+.display-control { @apply relative; }
+.display-control::after { @apply pointer-events-none absolute right-[10px] bottom-[17px] h-0 w-0 border-x-[5px] border-t-[9px] border-x-transparent border-t-[#222]; content: ''; }
+.display-control select { @apply w-[150px] appearance-none py-0 pr-6 pl-2 uppercase; }
+.action-button { @apply grid size-12 cursor-pointer place-items-center rounded-[11px] border-[1.5px] border-[#222] bg-turquoise; }
+.action-button:hover { @apply -translate-y-px brightness-[.96]; }
+.action-button img { @apply size-[27px]; }
+.truth-table-card { @apply mt-[13px] box-border min-h-[768px] flex-1 overflow-hidden rounded-[23px] border-[1.5px] border-[#222] bg-light-cyan px-[30px] pt-[28px] pb-[60px] dark:bg-gunmetal dark:border-light-cyan; }
+.table-scroll { @apply overflow-x-auto; }
+table { @apply w-full min-w-[980px] border-separate border-spacing-0 rounded-[23px] border-[1.5px] border-[#222] text-center text-[42px] leading-none; }
+th, td { @apply h-[73px] whitespace-nowrap border-b-[1.5px] border-[#222] px-3; }
+th { @apply h-[72px] bg-dark-slate-grey font-medium text-[#d8efeb]; }
+td { @apply font-normal text-[#303434] dark:bg-light-cyan; }
+tbody tr.highlighted td { @apply bg-dark-cyan text-[#d8efeb]; }
+tbody tr:last-child td { @apply border-b-0; }
+th:first-child { @apply rounded-tl-[23px]; }
+th:last-child { @apply rounded-tr-[23px]; }
 th:nth-child(-n + 5), td:nth-child(-n + 5) { width: 8%; }
 th:nth-child(6), th:nth-child(7), td:nth-child(6), td:nth-child(7) { width: 11%; }
 th:nth-child(8), td:nth-child(8) { width: 25%; }
 th:last-child, td:last-child { width: 9%; }
-@media (max-width: 760px) { .truth-table-workspace { padding: 24px 14px; } .table-controls { align-items: stretch; flex-wrap: wrap; } .expression-control { width: 100%; } .expression-control input { width: 100%; } .truth-table-card { min-height: 0; padding: 18px 14px 24px; } table { font-size: 30px; } }
+
+@media (max-width: 760px) {
+  .truth-table-workspace { @apply px-[14px] py-6; }
+  .table-controls { @apply flex-wrap items-stretch; }
+  .expression-control, .expression-control input { @apply w-full; }
+  .truth-table-card { @apply min-h-0 px-[14px] pt-[18px] pb-6; }
+  table { @apply text-[30px]; }
+}
 </style>

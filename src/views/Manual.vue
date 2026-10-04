@@ -2,8 +2,12 @@
 import { computed, ref } from 'vue'
 import { openUrl } from '@tauri-apps/plugin-opener';
 import HeaderComponent from '@/components/Header.vue'
+import { useConfigStore } from '../stores/config';
 
 type Rule = { name: string; description: string; examples: string[]; notes: string[] }
+
+const configStore = useConfigStore();
+
 const rules: Rule[] = [
   { name: 'Identidade', description: 'Operar com o elemento neutro não altera o valor.', examples: ['A + 0 ⇒ A', 'A & 1 ⇒ A'], notes: ['Útil para remover constantes que não alteram o resultado da expressão.'] },
   { name: 'Dominação', description: 'O valor dominante determina o resultado da operação.', examples: ['A + 1 ⇒ 1', 'A & 0 ⇒ 0'], notes: ['O termo dominante depende do operador utilizado.', 'O valor dominante torna os demais termos da operação irrelevantes.'] },
@@ -26,7 +30,7 @@ async function openExternalLink(event: MouseEvent, url: string) {
 </script>
 
 <template>
-  <main class="manual-page">
+  <main class="manual-page" :class="{dark: configStore.darkTheme}">
     <HeaderComponent :active-window-button="2" />
     <div class="manual-layout">
       <aside class="sidebar" aria-label="Regras da álgebra booleana">
@@ -38,11 +42,11 @@ async function openExternalLink(event: MouseEvent, url: string) {
       </aside>
 
       <article class="content">
-        <h2>{{ selectedRule.name === 'D. Negação' ? 'Dupla Negação' : selectedRule.name }}</h2>
-        <p class="description">{{ selectedRule.description }}</p>
-        <h3 class="example-heading">EXEMPLO:</h3>
+        <h2 class="colored-text">{{ selectedRule.name === 'D. Negação' ? 'Dupla Negação' : selectedRule.name }}</h2>
+        <p class="description colored-text">{{ selectedRule.description }}</p>
+        <h3 class="example-heading colored-text">EXEMPLO:</h3>
         <section class="example-card" :aria-label="`Exemplos de ${selectedRule.name}`"><p v-for="example in selectedRule.examples" :key="example">{{ example }}</p></section>
-        <section class="notes"><h3>Observações:</h3><ul><li v-for="note in selectedRule.notes" :key="note">{{ note }}</li></ul></section>
+        <section class="notes"><h3 class="colored-text">Observações:</h3><ul><li v-for="note in selectedRule.notes" :key="note" :class="{'text-light-cyan': configStore.darkTheme}">{{ note }}</li></ul></section>
       </article>
     </div>
   </main>
@@ -50,20 +54,46 @@ async function openExternalLink(event: MouseEvent, url: string) {
 
 <style scoped>
 @reference "../assets/main.css";
-:global(html), :global(body), :global(#app) { min-height: 100%; }
-.manual-page { min-height: 100dvh; overflow: hidden; background: white; color: #242424; font-family: var(--font-roboto); }
-.manual-layout { display: flex; min-height: calc(100dvh - 74px); border: 1.5px solid #222; border-top: 0; }
-.sidebar { display: flex; width: 231px; flex: 0 0 231px; flex-direction: column; border-right: 1.5px solid #222; background: var(--color-light-cyan); }
-.sidebar h1 { margin: 0; padding: 23px 12px 21px; border-bottom: 1.5px solid #222; font-size: 19px; font-weight: 800; font-family: var(--font-roboto); text-transform: uppercase; line-height: 1.28; text-align: center; }
-.sidebar nav { display: flex; flex-direction: column; }
-.rule-link { min-height: 46px; border: 0; border-bottom: 1.5px solid #222; background: transparent; color: #282d2d; cursor: pointer; font: 400 25px/1 var(--font-roboto); letter-spacing: .2px; padding: 0 11px; text-align: left; }
-.rule-link:hover, .rule-link:focus-visible { background: #c9f0e9; outline: none; }
-.rule-link.active { background: var(--color-turquoise); }
-.topic { display: flex; flex-direction: column; margin-top: auto; font-size: 19px; letter-spacing: .2px; }
-.topic span { padding: 0 11px 1px; }.topic a { border-top: 1.5px solid #222; background: var(--color-dark-cyan); color: #e4f9f5; padding: 10px 23px; text-decoration: none; }.topic a:hover { background: #0d8186; }
-.content { min-width: 0; flex: 1; padding: 14px 22px 46px; }.content h2 { margin: 0; font-size: 61px; font-weight: 900; letter-spacing: .2px; line-height: 1.12; }.description { max-width: 940px; margin: 13px 0 18px; font-size: 20px; letter-spacing: .4px; line-height: 1.28; }
-.example-heading { margin: 0 0 4px; font-size: 24px; font-weight: 900; line-height: 1.1; }
-.example-card { box-sizing: border-box; min-height: 314px; border: 1.5px solid #222; border-radius: 19px; background: var(--color-light-cyan); padding: 26px 35px; }.example-card p { margin: 0; font-size: 60px; font-weight: 900; letter-spacing: .5px; line-height: 1.22; }.example-card p + p { margin-top: 8px; }
-.notes { margin-top: 11px; }.notes h3 { margin: 0 0 10px; font-size: 29px; font-weight: 900; line-height: 1.1; }.notes ul { margin: 0; padding: 0; list-style: none; font-size: 19px; letter-spacing: .35px; line-height: 1.35; }.notes li::before { content: '*'; margin-right: 9px; }
-@media (max-width: 760px) { .manual-page { overflow: auto; }.manual-layout { flex-direction: column; }.sidebar { width: auto; flex: none; border-right: 0; border-bottom: 1.5px solid #222; }.sidebar h1 { padding: 16px; }.sidebar nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }.rule-link { min-height: 42px; border-right: 1.5px solid #222; font-size: 18px; }.topic { margin-top: 12px; }.content { padding: 24px 16px 35px; }.content h2 { font-size: 45px; }.description { font-size: 17px; }.example-card { min-height: 220px; padding: 26px; }.example-card p { font-size: 39px; }.notes h3 { font-size: 25px; }.notes ul { font-size: 16px; } }
+:global(html), :global(body), :global(#app) { @apply min-h-full; }
+.manual-page { @apply min-h-dvh overflow-hidden bg-white font-roboto text-[#242424]; }
+.manual-layout { @apply flex min-h-[calc(100dvh-74px)] border-[1.5px] border-t-0 border-[#222] dark:bg-gunmetal; }
+.sidebar { @apply flex w-[231px] flex-[0_0_231px] flex-col border-r-[1.5px] border-[#222] bg-light-cyan; }
+.sidebar h1 { @apply m-0 border-b-[1.5px] border-[#222] px-3 pt-[23px] pb-[21px] text-center font-roboto text-[19px] font-extrabold uppercase leading-[1.28]; }
+.sidebar nav { @apply flex flex-col; }
+.rule-link { @apply min-h-[46px] cursor-pointer border-0 border-b-[1.5px] border-[#222] bg-transparent px-[11px] text-left font-roboto text-[25px] font-normal leading-none tracking-[.2px] text-[#282d2d]; }
+.rule-link:hover, .rule-link:focus-visible { @apply bg-[#c9f0e9] outline-none; }
+.rule-link.active { @apply bg-turquoise; }
+.topic { @apply mt-auto flex flex-col text-[19px] tracking-[.2px]; }
+.topic span { @apply px-[11px] pt-0 pb-px; }
+.topic a { @apply border-t-[1.5px] border-[#222] bg-dark-cyan px-[23px] py-[10px] text-light-cyan no-underline; }
+.topic a:hover { @apply bg-[#0d8186]; }
+.content { @apply min-w-0 flex-1 pt-[14px] pr-[22px] pb-[46px] pl-[22px]; }
+.content h2 { @apply m-0 text-[61px] font-black leading-[1.12] tracking-[.2px]; }
+.description { @apply mt-[13px] mr-0 mb-[18px] ml-0 max-w-[940px] text-[20px] leading-[1.28] tracking-[.4px]; }
+.example-heading { @apply mt-0 mr-0 mb-1 ml-0 text-[24px] font-black leading-[1.1]; }
+.example-card { @apply box-border min-h-[314px] rounded-[19px] border-[1.5px] border-[#222] bg-light-cyan px-[35px] py-[26px]; }
+.example-card p { @apply m-0 text-[60px] font-black leading-[1.22] tracking-[.5px]; }
+.example-card p + p { @apply mt-2; }
+.notes { @apply mt-[11px]; }
+.notes h3 { @apply mt-0 mr-0 mb-[10px] ml-0 text-[29px] font-black leading-[1.1]; }
+.notes ul { @apply m-0 list-none p-0 text-[19px] leading-[1.35] tracking-[.35px]; }
+.notes li::before { @apply mr-[9px]; content: '*'; }
+.colored-text { @apply dark:text-light-cyan; }
+
+@media (max-width: 760px) {
+  .manual-page { @apply overflow-auto; }
+  .manual-layout { @apply flex-col; }
+  .sidebar { @apply w-auto flex-none border-r-0 border-b-[1.5px] border-[#222]; }
+  .sidebar h1 { @apply p-4; }
+  .sidebar nav { @apply grid grid-cols-2; }
+  .rule-link { @apply min-h-[42px] border-r-[1.5px] border-[#222] text-[18px]; }
+  .topic { @apply mt-3; }
+  .content { @apply px-4 pt-6 pb-[35px]; }
+  .content h2 { @apply text-[45px]; }
+  .description { @apply text-[17px]; }
+  .example-card { @apply min-h-[220px] p-[26px]; }
+  .example-card p { @apply text-[39px]; }
+  .notes h3 { @apply text-[25px]; }
+  .notes ul { @apply text-[16px]; }
+}
 </style>
