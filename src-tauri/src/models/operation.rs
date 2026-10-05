@@ -5,14 +5,13 @@ pub enum Op {
     And,
     Or,
     Xor,
-    Xnor,
 }
 
 pub fn prec(op: Option<Op>) -> i32 {
     match op {
         None => 100,
         Some(Op::Or) => 1,
-        Some(Op::Xor | Op::Xnor) => 2,
+        Some(Op::Xor) => 2,
         Some(Op::And) => 3,
     }
 }
@@ -29,43 +28,36 @@ pub fn symbol(op: Op, n: notation::Notation) -> &'static str {
             Op::And => " & ",
             Op::Or => " + ",
             Op::Xor => " ^ ",
-            Op::Xnor => " # ",
         },
         notation::Notation::Logic => match op {
             Op::And => " ∧ ",
             Op::Or => " ∨ ",
             Op::Xor => " ⊻ ",
-            Op::Xnor => " ≡ ",
         },
         notation::Notation::Mathematical => match op {
             Op::And => " ⋅ ",
             Op::Or => " + ",
             Op::Xor => " ⊕ ",
-            Op::Xnor => " ⊙ ",
         },
         notation::Notation::ProgBools => match op {
             Op::And => " && ",
             Op::Or => " || ",
             Op::Xor => " ^ ",
-            Op::Xnor => " == ",
         },
         notation::Notation::ProgBits => match op {
             Op::And => " & ",
             Op::Or => " | ",
             Op::Xor => " ^ ",
-            Op::Xnor => " ^~ ",
         },
         notation::Notation::AltLogic => match op {
             Op::And => " ∧ ",
             Op::Or => " ∨ ",
             Op::Xor => " ≢ ",
-            Op::Xnor => " ≡ ",
         },
         notation::Notation::Latex => match op {
             Op::And => " \\cdot ",
             Op::Or => " + ",
             Op::Xor => " \\oplus ",
-            Op::Xnor => " \\odot ",
         },
     }
 }

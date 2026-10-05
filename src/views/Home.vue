@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import HeaderComponent from '../components/Header.vue'
+import { invoke } from '@tauri-apps/api/core'
 
 type ReductionStep = { title: string; expression: string; description: string }
 
@@ -11,13 +12,16 @@ import copyCyanIcon from '@/assets/copy-cyan.svg'
 import ufalIcon from '@/assets/ufal-logo.svg'
 import bookIcon from '@/assets/book.svg'
 import githubIcon from '@/assets/github-logo.svg'
-import { ref } from 'vue';
+import { Ref, ref } from 'vue';
 import { useConfigStore } from '../stores/config.ts';
 
 const configStore = useConfigStore();
 
-const expression = '~((~A + B) & (~B + C))'
-const result = '(~A & ~B) + (B & ~C)'
+const expression = ref('')
+const result = ref('');
+const submittedExpression = ref('');
+const error = ref('');
+const isSimplifying = ref(false);
 
 const notations = [
   { text:"PADRÃO", value: "default"},
@@ -30,11 +34,40 @@ const notations = [
 ]
 const notation = ref("default");
 
-const steps: ReductionStep[] = [
-  { title: 'De Morgan', expression: '~((~A + B) & (~B + C))  ⇒  ~(~A + B) + ~(~B + C)', description: 'Aplicação da negação sobre uma conjunção.' },
-  { title: 'Distributiva', expression: '~(A + B) + ~(~B + C)  ⇒  (~A & ~B) + (B & ~C)', description: 'Distribuição da negação da aplicação da distributiva.' },
-  { title: 'Associativa', expression: '(~A & ~B) + (B & ~C)  ⇒  (~A & ~B) + (B & ~C)', description: 'Reorganização dos termos por associatividade.' },
-]
+const steps: Ref<ReductionStep[]> = ref([]);
+
+interface stepStruct {
+  rule_name: string,
+  after_rule: string
+}
+
+async function simplification() {
+  const source = expression.value.trim() || '~((~A + B) & (~B + C))';
+
+  isSimplifying.value = true;
+  error.value = '';
+  submittedExpression.value = source;
+  steps.value = [];
+  result.value = '';
+
+  try {
+    const [simplifiedExpression, newSteps] = await invoke<[string, stepStruct[]]>(
+      'simplify_helper',
+      { source, notation: notation.value },
+    );
+
+    result.value = simplifiedExpression;
+    steps.value = newSteps.map((step) => ({
+      title: step.rule_name,
+      expression: step.after_rule,
+      description: 'Regra aplicada durante a simplificação.',
+    }));
+  } catch (reason) {
+    error.value = typeof reason === 'string' ? reason : 'Não foi possível simplificar a expressão.';
+  } finally {
+    isSimplifying.value = false;
+  }
+}
 </script>
 
 <template>
@@ -44,19 +77,19 @@ const steps: ReductionStep[] = [
       <div class="controls-row">
         <label class="field expression-field">
           <span class="font-text">Expressão booleana:</span>
-          <input :value="expression" type="text" aria-label="Expressão booleana" />
+          <input v-model="expression" placeholder="~((~A + B) & (~B + C))" type="text" aria-label="Expressão booleana" />
         </label>
         <div class="notation-control">
           <label class="field notation-field">
             <span class="font-text">Notação:</span>
-            <select :value="notation" aria-label="Notação">
+            <select v-model="notation" aria-label="Notação">
               <option v-for="notation in notations" :value="notation.value" :key="notation.value">
                 {{ notation.text }}
               </option>
             </select>
           </label>
-          <button class="action-button" type="button" aria-label="Alternar tema">
-            <img :src="checkIcon" class="action-button-img" alt="Moon icon" aria-hidden="true" />
+          <button class="action-button" type="button" aria-label="Simplificar expressão" :disabled="isSimplifying" @click="simplification">
+            <img :src="checkIcon" class="action-button-img" alt="" aria-hidden="true" />
           </button>
           <button class="action-button" type="button" aria-label="Alternar tema">
             <img :src="deleteIcon" class="action-button-img" alt="Moon icon" aria-hidden="true" />
@@ -71,10 +104,14 @@ const steps: ReductionStep[] = [
         <div class="steps-card">
           <article v-for="(step, index) in steps" :key="step.title" class="step">
             <h2>{{ index + 1 }}. <span>{{ step.title }}</span></h2>
-            <p class="step-expression">{{ step.expression }}</p>
+            
+            <p v-if="index == 0" class="step-expression">{{ submittedExpression }} -> {{ step.expression }}</p>
+            <p v-else class="step-expression">{{ steps[index - 1].expression }} -> {{ step.expression }}</p>
+            
             <p class="step-description">{{ step.description }}</p>
           </article>
         </div>
+        <p v-if="error" role="alert">{{ error }}</p>
       </section>
       <section class="result-row" aria-label="Resultado simplificado">
         <h2 class="font-text">Forma simplificada:</h2>

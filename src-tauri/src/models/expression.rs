@@ -11,6 +11,7 @@ pub enum Expr {
 pub fn not(e: Expr) -> Expr {
     Expr::Not(Box::new(e))
 }
+
 pub fn bin(a: Expr, op: operation::Op, b: Expr) -> Expr {
     Expr::Bin(Box::new(a), op, Box::new(b))
 }
@@ -38,13 +39,26 @@ pub fn neg_of(a: &Expr, b: &Expr) -> bool {
     matches!(a,Expr::Not(x) if x.as_ref()==b) || matches!(b,Expr::Not(x) if x.as_ref()==a)
 }
 
+pub fn ordering_key(e: &Expr) -> String {
+    match e {
+        Expr::Var(name) => format!("0:{name}"),
+        Expr::Const(value) => format!("1:{}", u8::from(*value)),
+        Expr::Not(inner) => format!("2:{}", ordering_key(inner)),
+        Expr::Bin(left, op, right) => format!(
+            "3:{op:?}:{}:{}",
+            ordering_key(left),
+            ordering_key(right)
+        ),
+    }
+}
+
 pub fn terms<'a>(e: &'a Expr, op: operation::Op, out: &mut Vec<&'a Expr>) {
-    if let Expr::Bin(a, o, b) = e {
-        if *o == op {
-            terms(a, op, out);
-            terms(b, op, out);
-            return;
-        }
+    if let Expr::Bin(a, o, b) = e
+        && *o == op
+    {
+        terms(a, op, out);
+        terms(b, op, out);
+        return;
     }
     out.push(e)
 }

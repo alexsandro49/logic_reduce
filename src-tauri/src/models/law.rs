@@ -1,27 +1,30 @@
 #[derive(Clone, Copy)]
 pub enum Law {
     Identity,
-    Null,
-    Idempotent,
-    Inverse,
+    Domination,
+    Idempotence,
+    Complement,
+    DoubleNegation,
+    Commutativity,
+    Associativity,
+    Distributivity,
     Absorption,
-    InverseDistributive,
-    Xor,
-    Demorgans,
+    DeMorgan,
 }
 
 impl Law {
-    #[allow(unused)]
-    pub fn name(self) -> &'static str {
+    pub fn label(self) -> &'static str {
         match self {
-            Law::Identity => "IDENTITY",
-            Law::Null => "NULL",
-            Law::Idempotent => "IDEMPOTENT",
-            Law::Inverse => "INVERSE",
-            Law::Absorption => "ABSORPTION",
-            Law::InverseDistributive => "INVERSE_DISTRIBUTIVE",
-            Law::Xor => "XOR",
-            Law::Demorgans => "DEMORGANS",
+            Law::Identity => "Identidade",
+            Law::Domination => "Dominação",
+            Law::Idempotence => "Idempotência",
+            Law::Complement => "Complemento",
+            Law::DoubleNegation => "D. Negação",
+            Law::Commutativity => "Comutativa",
+            Law::Associativity => "Associativa",
+            Law::Distributivity => "Distributiva",
+            Law::Absorption => "Absorção",
+            Law::DeMorgan => "De Morgan",
         }
     }
 }

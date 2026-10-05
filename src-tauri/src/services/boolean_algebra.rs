@@ -69,3 +69,35 @@ pub fn format(
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{format, simplify};
+    use crate::models::{notation::Notation, parser::Parser};
+
+    #[test]
+    fn simplifies_absorption_across_associated_terms() {
+        let expression = Parser::parse("(A & ~C) + (B + ~C)").unwrap();
+        let (simplified, steps) = simplify(expression);
+
+        assert_eq!(format(&simplified, None, false, Notation::Default), "B + ~C");
+        assert!(steps.iter().any(|(_, _, law, _)| matches!(law, crate::models::law::Law::Absorption)));
+    }
+
+    #[test]
+    fn applies_commutativity_in_a_stable_direction() {
+        let expression = Parser::parse("B + A").unwrap();
+        let (simplified, steps) = simplify(expression);
+
+        assert_eq!(format(&simplified, None, false, Notation::Default), "A + B");
+        assert!(steps.iter().any(|(_, _, law, _)| matches!(law, crate::models::law::Law::Commutativity)));
+    }
+
+    #[test]
+    fn normalizes_association_to_the_left() {
+        let expression = Parser::parse("A + (B + C)").unwrap();
+        let (_, steps) = simplify(expression);
+
+        assert!(steps.iter().any(|(_, _, law, _)| matches!(law, crate::models::law::Law::Associativity)));
+    }
+}

@@ -38,19 +38,29 @@ impl Parser {
             false
         }
     }
+    fn take_text(&mut self, text: &str) -> bool {
+        self.spaces();
+        let symbols: Vec<char> = text.chars().collect();
+        if self.chars[self.pos..].starts_with(&symbols) {
+            self.pos += symbols.len();
+            true
+        } else {
+            false
+        }
+    }
     fn error(&self, s: &str) -> String {
         format!("{} na posição {}", s, self.pos)
     }
     fn parse_or(&mut self) -> Result<expression::Expr, String> {
         let mut r = self.parse_xor()?;
-        while self.take('+') || self.take('|') {
+        while self.take('+') || self.take('∨') || self.take_text("||") || self.take('|') {
             r = expression::bin(r, operation::Op::Or, self.parse_xor()?);
         }
         Ok(r)
     }
     fn parse_xor(&mut self) -> Result<expression::Expr, String> {
         let mut r = self.parse_and()?;
-        while self.take('^') {
+        while self.take('^') || self.take('⊕') || self.take('≢') {
             r = expression::bin(r, operation::Op::Xor, self.parse_and()?);
         }
         Ok(r)
@@ -58,9 +68,7 @@ impl Parser {
     fn parse_and(&mut self) -> Result<expression::Expr, String> {
         let mut r = self.parse_unary()?;
         loop {
-            if self.take('.') || self.take('*') || self.take('&') {
-                r = expression::bin(r, operation::Op::And, self.parse_unary()?);
-            } else if self.starts_unary() {
+            if self.take('.') || self.take('*') || self.take('·') || self.take('∧') || self.take_text("&&") || self.take('&') || self.starts_unary() {
                 r = expression::bin(r, operation::Op::And, self.parse_unary()?);
             } else {
                 return Ok(r);
@@ -74,7 +82,7 @@ impl Parser {
                 || self.chars[self.pos].is_alphabetic())
     }
     fn parse_unary(&mut self) -> Result<expression::Expr, String> {
-        if self.take('~') || self.take('!') {
+        if self.take('~') || self.take('!') || self.take('¬') {
             return Ok(expression::not(self.parse_unary()?));
         }
         if self.take('(') {
