@@ -14,6 +14,8 @@ import bookIcon from '@/assets/book.svg'
 import githubIcon from '@/assets/github-logo.svg'
 import { Ref, ref } from 'vue';
 import { useConfigStore } from '../stores/config.ts';
+import { generateRandomExpression } from '../utils/expressionGenerator.ts';
+import { stepStruct } from '../utils/types.ts';
 
 const configStore = useConfigStore();
 
@@ -33,13 +35,7 @@ const notations = [
   { text:"LATEX", value: "latex"}
 ]
 const notation = ref("default");
-
 const steps: Ref<ReductionStep[]> = ref([]);
-
-interface stepStruct {
-  rule_name: string,
-  after_rule: string
-}
 
 async function simplification() {
   const source = expression.value.trim() || '~((~A + B) & (~B + C))';
@@ -68,6 +64,19 @@ async function simplification() {
     isSimplifying.value = false;
   }
 }
+
+function clearData() {
+  isSimplifying.value = false;
+  error.value = '';
+  steps.value = [];
+  result.value = '';
+  expression.value = ''
+}
+
+function randomExpressionHelper() {
+  clearData()
+  expression.value = generateRandomExpression(expression)
+}
 </script>
 
 <template>
@@ -91,10 +100,10 @@ async function simplification() {
           <button class="action-button" type="button" aria-label="Simplificar expressão" :disabled="isSimplifying" @click="simplification">
             <img :src="checkIcon" class="action-button-img" alt="" aria-hidden="true" />
           </button>
-          <button class="action-button" type="button" aria-label="Alternar tema">
+          <button @click="clearData" class="action-button" type="button" aria-label="Alternar tema">
             <img :src="deleteIcon" class="action-button-img" alt="Moon icon" aria-hidden="true" />
           </button>
-          <button class="action-button" type="button" aria-label="Alternar tema">
+          <button class="action-button" type="button" aria-label="Expressão aleatória" :disabled="isSimplifying" @click="randomExpressionHelper">
             <img :src="refreshIcon" class="action-button-img" alt="Moon icon" aria-hidden="true" />
           </button>
         </div>

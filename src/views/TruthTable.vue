@@ -5,11 +5,7 @@ import checkIcon from '@/assets/check-fat.svg'
 import deleteIcon from '@/assets/trash.svg'
 import refreshIcon from '@/assets/arrows-clockwise.svg'
 import { useConfigStore } from '../stores/config.ts'
-
-type TruthTableRow = {
-  a: number; b: number; c: number; notA: number; notB: number
-  notAOrB: number; notBOrC: number; conjunction: number; result: number
-}
+import { TruthTableRow } from '../utils/types.ts'
 
 const configStore = useConfigStore();
 

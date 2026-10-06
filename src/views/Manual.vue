@@ -3,8 +3,7 @@ import { computed, ref } from 'vue'
 import { openUrl } from '@tauri-apps/plugin-opener';
 import HeaderComponent from '@/components/Header.vue'
 import { useConfigStore } from '../stores/config';
-
-type Rule = { name: string; description: string; examples: string[]; notes: string[] }
+import { Rule } from '../utils/types';
 
 const configStore = useConfigStore();
 
