@@ -9,3 +9,5 @@ export type TruthTableRow = {
   a: number; b: number; c: number; notA: number; notB: number
   notAOrB: number; notBOrC: number; conjunction: number; result: number
 }
+
+export type Color = { color: string, uses: string[] }

@@ -30,31 +30,44 @@ const rows: TruthTableRow[] = [
 
 function clearExpression() { expression.value = '' }
 function resetTable() { expression.value = '~((~A + B) & (~B + C))'; display.value = 'complete' }
+
+function tableColorHelper(index: number) {
+  const value = (index % 2 === 0) ? 'hightlighted-cell' : 'transparent'
+  return configStore.getColor(value)
+}
 </script>
 
 <template>
   <main class="truth-table-page" :class="{ dark: configStore.darkTheme }">
     <HeaderComponent :active-window-button="1"/>
-    <section class="truth-table-workspace" aria-label="Tabela verdade">
+    <section class="truth-table-workspace" :style="{backgroundColor: configStore.darkTheme ? configStore.getColor('background') : '#FFFFFF'}" aria-label="Tabela verdade">
       <div class="table-controls">
-        <label class="control-field expression-control"><span>Expressão booleana:</span><input v-model="expression" type="text" aria-label="Expressão booleana" /></label>
-        <label class="control-field display-control"><span>Exibição:</span><select v-model="display" aria-label="Exibição da tabela"><option v-for="option in displayOptions" :key="option.value" :value="option.value">{{ option.label }}</option></select></label>
+        <label class="control-field expression-control">
+          <span :style="{color: configStore.getColor('text')}">Expressão booleana:</span>
+          <input v-model="expression" :style="{backgroundColor: configStore.getColor('input')}" type="text" aria-label="Expressão booleana" />
+        </label>
+        <label class="control-field display-control">
+          <span :style="{color: configStore.getColor('text')}">Exibição:</span>
+          <select v-model="display" :style="{backgroundColor: configStore.getColor('input')}" aria-label="Exibição da tabela">
+            <option v-for="option in displayOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+          </select>
+        </label>
         <div class="control-actions" aria-label="Ações da tabela">
           <button type="button" class="action-button" aria-label="Gerar tabela"><img :src="checkIcon" alt="" /></button>
           <button type="button" class="action-button" aria-label="Limpar expressão" @click="clearExpression"><img :src="deleteIcon" alt="" /></button>
           <button type="button" class="action-button" aria-label="Restaurar valores" @click="resetTable"><img :src="refreshIcon" alt="" /></button>
         </div>
       </div>
-      <section class="truth-table-card" aria-label="Resultados da tabela verdade">
+      <section class="truth-table-card" :style="{backgroundColor: configStore.getColor('board')}" aria-label="Resultados da tabela verdade">
         <div class="table-scroll">
             <table>
                 <thead>
-                    <tr>
+                    <tr :style="{backgroundColor: configStore.getColor('header-table'), color: configStore.getColor('board')}">
                         <th v-for="column in columns" :key="column.key" scope="col">{{ column.label }}</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(row, index) in rows" :key="`${row.a}-${row.b}-${row.c}`" :class="{ highlighted: index % 2 === 0 }">
+                    <tr v-for="(row, index) in rows" :key="`${row.a}-${row.b}-${row.c}`" :style="{backgroundColor: tableColorHelper(index)}">
                         <td v-for="column in columns" :key="column.key">{{ row[column.key] }}</td>
                     </tr>
                 </tbody>
@@ -70,11 +83,11 @@ function resetTable() { expression.value = '~((~A + B) & (~B + C))'; display.val
 
 :global(html), :global(body), :global(#app) { @apply min-h-full; }
 .truth-table-page { @apply box-border flex min-h-dvh flex-col m-0 bg-white p-0 font-roboto text-[#282d2d]; }
-.truth-table-workspace { @apply box-border flex min-h-0 flex-1 flex-col border-[1.5px] border-t-0 border-[#222] bg-white px-[30px] pt-[31px] pb-[28px] dark:bg-gunmetal; }
+.truth-table-workspace { @apply box-border flex min-h-0 flex-1 flex-col border-[1.5px] border-t-0 border-[#222] px-[30px] pt-[31px] pb-[28px]; }
 .table-controls, .control-actions { @apply flex items-end gap-[13px]; }
 .control-field { @apply flex flex-col gap-[6px]; }
-.control-field > span { @apply text-[19px] font-extrabold uppercase tracking-[.1px] text-[#303434] dark:text-light-cyan; }
-input, select { @apply box-border h-[49px] rounded-[11px] border-[1.5px] border-[#222] bg-light-cyan font-roboto text-[20px] text-[#202525] outline-none; }
+.control-field > span { @apply text-[19px] font-extrabold uppercase tracking-[.1px]; }
+input, select { @apply box-border h-[49px] rounded-[11px] border-[1.5px] border-[#222] font-roboto text-[20px] outline-none; }
 input:focus-visible, select:focus-visible, button:focus-visible { @apply outline-[3px] outline-turquoise outline-offset-2; }
 .expression-control input { @apply w-[308px] px-[13px]; }
 .display-control { @apply relative; }
@@ -83,12 +96,12 @@ input:focus-visible, select:focus-visible, button:focus-visible { @apply outline
 .action-button { @apply grid size-12 cursor-pointer place-items-center rounded-[11px] border-[1.5px] border-[#222] bg-turquoise; }
 .action-button:hover { @apply -translate-y-px brightness-[.96]; }
 .action-button img { @apply size-[27px]; }
-.truth-table-card { @apply mt-[13px] box-border min-h-[768px] flex-1 overflow-hidden rounded-[23px] border-[1.5px] border-[#222] bg-light-cyan px-[30px] pt-[28px] pb-[60px] dark:bg-gunmetal dark:border-light-cyan; }
+.truth-table-card { @apply mt-[13px] box-border min-h-[768px] flex-1 overflow-hidden rounded-[23px] border-[1.5px] px-[30px] pt-[28px] pb-[60px]; }
 .table-scroll { @apply overflow-x-auto; }
 table { @apply w-full min-w-[980px] border-separate border-spacing-0 rounded-[23px] border-[1.5px] border-[#222] text-center text-[42px] leading-none; }
 th, td { @apply h-[73px] whitespace-nowrap border-b-[1.5px] border-[#222] px-3; }
-th { @apply h-[72px] bg-dark-slate-grey font-medium text-[#d8efeb]; }
-td { @apply font-normal text-[#303434] dark:bg-light-cyan; }
+th { @apply h-[72px] font-medium; }
+td { @apply font-normal; }
 tbody tr.highlighted td { @apply bg-dark-cyan text-[#d8efeb]; }
 tbody tr:last-child td { @apply border-b-0; }
 th:first-child { @apply rounded-tl-[23px]; }

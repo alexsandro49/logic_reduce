@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import logo from '@/assets/circuitry.svg'
+import blackLogo from '@/assets/circuitry.svg'
+import whiteLogo from '@/assets/circuitry-white.svg'
 import moonIcon from '@/assets/moon.svg'
 import sunIcon from '@/assets/sun.svg'
 import paintRollerIcon from '@/assets/paint-roller.svg'
@@ -19,26 +20,31 @@ const windowButtons = [
 const configStore = useConfigStore();
 
 const router = useRouter();
+
+function buttonColorHelper(value: number) {
+  const tag = props.activeWindowButton == value ? 'active-button' : 'navigation-link';
+  return configStore.getColor(tag);
+}
 </script>
 
 <template>
-  <header class="app-header">
+  <header class="app-header" :style="{backgroundColor: configStore.getColor('base')}">
     <a class="brand" href="#" aria-label="Logic Reduce">
-      <img :src="logo" alt="Program logo" aria-hidden="true" />
+      <img :src="configStore.whiteLogo ? whiteLogo : blackLogo" alt="Program logo" aria-hidden="true" />
     </a>
 
     <nav v-for="(link, index) in windowButtons" v-key="index" class="main-navigation" aria-label="Navegação principal">
-      <a :class="{'is-active': activeWindowButton == index}" class="navigation-link" @click="router.push(`/${link.route}`)">{{ link.name }}</a>
+      <a :style="{backgroundColor: buttonColorHelper(index)}" class="navigation-link hover:-translate-y-px hover:brightness-[.96]" @click="router.push(`/${link.route}`)">{{ link.name }}</a>
     </nav>
 
     <div class="header-actions">
-      <button v-if="configStore.darkTheme == true" @click="configStore.darkTheme = !configStore.darkTheme" class="icon-button" type="button" aria-label="Alternar tema">
+      <button v-if="configStore.darkTheme == true" @click="configStore.darkTheme = !configStore.darkTheme" class="icon-button hover:-translate-y-px hover:brightness-[.96]" :style="{backgroundColor: configStore.getColor('navigation-link')}" type="button" aria-label="Alternar tema">
         <img :src="sunIcon" alt="Moon icon" aria-hidden="true" />
       </button>
-      <button v-else class="icon-button" @click="configStore.darkTheme = !configStore.darkTheme" type="button" aria-label="Alternar tema">
+      <button v-else class="icon-button hover:-translate-y-px hover:brightness-[.96]" @click="configStore.darkTheme = !configStore.darkTheme" :style="{backgroundColor: configStore.getColor('navigation-link')}" type="button" aria-label="Alternar tema">
         <img :src="moonIcon" alt="Moon icon" aria-hidden="true" />
       </button>
-      <button class="icon-button" type="button" aria-label="Imprimir página">
+      <button class="icon-button hover:-translate-y-px hover:brightness-[.96]" @click="configStore.nextTheme()" :style="{backgroundColor: configStore.getColor('navigation-link')}" type="button" aria-label="Imprimir página">
         <img :src="paintRollerIcon" alt="Sun icon" aria-hidden="true" />
       </button>
     </div>
@@ -48,7 +54,6 @@ const router = useRouter();
 <style scoped>
 .app-header {
   align-items: center;
-  background: var(--color-dark-cyan);
   border: 1.5px solid #222;
   box-sizing: border-box;
   display: flex;
@@ -104,15 +109,10 @@ const router = useRouter();
   white-space: nowrap;
 }
 
-.navigation-link.is-active {
-  background: var(--color-turquoise);
-}
-
 .navigation-link:hover,
 .navigation-link:focus-visible,
 .icon-button:hover,
 .icon-button:focus-visible {
-  outline: 2px solid var(--color-light-cyan);
   cursor: pointer;
 }
 
@@ -124,7 +124,6 @@ const router = useRouter();
 
 .icon-button {
   align-items: center;
-  background: var(--color-turquoise);
   border-radius: 11px;
   cursor: pointer;
   display: flex;
