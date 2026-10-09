@@ -54,12 +54,21 @@ export const useConfigStore = defineStore(
       ],
       [
         { color: '#850E35', uses: ['base', 'header-table', 'dark-cell-text'] },
-        { color: '#EE6983', uses: ['header-active-tab', 'hightlighted-cell', 'dark-text', 'action-button',
-                                    'footer-buttons-background'] },
+        { color: '#EE6983', uses: ['header-active-tab', 'hightlighted-cell', 'dark-text', 
+                                    'action-button', 'footer-buttons-background'] },
         { color: '#FFC4C4', uses: ['header-tab', 'navigation-link'] },
         { color: '#FFF5E4', uses: ['board', 'input', 'result-value', 'light-cell-text'] },
         { color: '#343A40', uses: ['background', 'text', 'icon-color', 'footer-buttons-color', 
                                     'input-text'] },
+        { color: '#00000000', uses: ['transparent'] },
+      ],
+      [
+        { color: '#222831', uses: ['base', 'header-table', 'dark-cell-text', 'icon-color',
+                                    'text', 'input-text', 'footer-buttons-color'] },
+        { color: '#393E46', uses: ['hightlighted-cell', 'background'] },
+        { color: '#FFD369', uses: ['header-active-tab', 'navigation-link', 'action-button',
+                                    'footer-buttons-background', 'dark-text'] },
+        { color: '#EEEEEE', uses: ['board', 'header-tab', 'input', 'result-value', 'light-cell-text'] },
         { color: '#00000000', uses: ['transparent'] },
       ]
     ]
