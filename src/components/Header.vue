@@ -18,7 +18,7 @@ const configStore = useConfigStore();
 const router = useRouter();
 
 function buttonColorHelper(value: number) {
-  const tag = props.activeWindowButton == value ? 'active-button' : 'navigation-link';
+  const tag = props.activeWindowButton == value ? 'header-active-tab' : 'header-tab';
   return configStore.getColor(tag);
 }
 </script>

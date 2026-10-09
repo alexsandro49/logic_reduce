@@ -94,13 +94,13 @@ function randomExpressionHelper() {
             </select>
           </label>
           <button @click="simplification" class="action-button" :style="{backgroundColor: configStore.getColor('active-button')}" type="button" aria-label="Simplificar expressão" :disabled="isSimplifying">
-            <PhCheckFat :size="32" :color="configStore.getColor('background')" weight="fill" />
+            <PhCheckFat :size="32" :color="configStore.getColor('icon-color')" weight="fill" />
           </button>
           <button @click="clearData" class="action-button" :style="{backgroundColor: configStore.getColor('active-button')}" type="button" aria-label="Alternar tema">
-            <PhTrash :size="32" :color="configStore.getColor('background')" weight="fill" />
+            <PhTrash :size="32" :color="configStore.getColor('icon-color')" weight="fill" />
           </button>
           <button class="action-button" :style="{backgroundColor: configStore.getColor('active-button')}" type="button" aria-label="Expressão aleatória" :disabled="isSimplifying" @click="randomExpressionHelper">
-            <PhArrowsClockwise :size="32" :color="configStore.getColor('background')" weight="bold" />
+            <PhArrowsClockwise :size="32" :color="configStore.getColor('icon-color')" weight="bold" />
           </button>
         </div>
       </div>
@@ -128,14 +128,14 @@ function randomExpressionHelper() {
     </section>
     <footer class="page-footer" :style="{borderColor: configStore.getColor('text')}">
       <strong :style="{color: configStore.getColor('text')}">2026</strong>
-      <button class="action-button" :style="{backgroundColor: configStore.getColor('footer-buttons')}" type="button" aria-label="Alternar tema">
+      <button class="action-button" :style="{backgroundColor: configStore.getColor('footer-buttons-background')}" type="button" aria-label="Alternar tema">
         <img :src="ufalIcon" class="ufal-button-img" alt="Moon icon" aria-hidden="true" />
       </button>
-      <button class="action-button" :style="{backgroundColor: configStore.getColor('footer-buttons')}" type="button" aria-label="Alternar tema">
-        <PhBook :size="32" :color="configStore.getColor('background')" weight="fill" />
+      <button class="action-button" :style="{backgroundColor: configStore.getColor('footer-buttons-background')}" type="button" aria-label="Alternar tema">
+        <PhBook :size="32" :color="configStore.getColor('footer-buttons-color')" weight="fill" />
       </button>
-      <button class="action-button" :style="{backgroundColor: configStore.getColor('footer-buttons')}" type="button" aria-label="Alternar tema">
-        <PhGithubLogo :size="32" :color="configStore.getColor('background')" weight="fill" />
+      <button class="action-button" :style="{backgroundColor: configStore.getColor('footer-buttons-background')}" type="button" aria-label="Alternar tema">
+        <PhGithubLogo :size="32" :color="configStore.getColor('footer-buttons-color')" weight="fill" />
       </button>
     </footer>
   </main>
@@ -152,13 +152,13 @@ function randomExpressionHelper() {
 .controls-row { @apply flex shrink-0 items-end gap-3.5 max-[760px]:flex-wrap max-[760px]:items-stretch; }
 .field { @apply flex flex-col gap-[7px]; }
 .field > span, .steps-section h1, .result-row h2 { @apply text-[19px] tracking-[.1px] uppercase; }
-input, select, .result-value { @apply box-border h-[45px] rounded-[10px] border-[1.5px] border-[#242424] px-[13px] text-[18px] leading-[1.2] text-[#242424] outline-none focus:outline-2 focus:outline-offset-2 focus:outline-turquoise; }
+input, select, .result-value { @apply box-border h-[45px] rounded-[10px] border-[1.5px] border-[#242424] px-[13px] text-[18px] leading-[1.2] text-[#242424] outline-none focus:outline-2 focus:outline-offset-2; }
 .expression-field { @apply w-[367px] max-[760px]:w-full; }
 .notation-control { @apply flex items-end gap-[13px] max-[760px]:w-full max-[760px]:flex-wrap max-[760px]:items-stretch; }
 .notation-field { @apply relative max-[760px]:flex-1 after:pointer-events-none after:absolute after:right-[14px] after:bottom-[18px] after:border-x-[5px] after:border-t-[7px] after:border-x-transparent after:border-t-[#242424]; }
-.notation-field select { @apply w-41 appearance-none bg-light-cyan pr-10 text-[#242424] disabled:opacity-100 max-[760px]:w-full; }
-.notation-field select option { @apply bg-light-cyan text-[#242424]; }
-.action-button, .page-footer button { @apply flex h-[45px] w-[45px] items-center justify-center rounded-[10px] border-[1.5px] p-0 text-[27px] leading-none font-bold hover:-translate-y-px hover:brightness-[.96] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-turquoise cursor-pointer; }
+.notation-field select { @apply w-41 appearance-none pr-10 text-[#242424] disabled:opacity-100 max-[760px]:w-full; }
+.notation-field select option { @apply text-[#242424]; }
+.action-button, .page-footer button { @apply flex h-[45px] w-[45px] items-center justify-center rounded-[10px] border-[1.5px] p-0 text-[27px] leading-none font-bold hover:-translate-y-px hover:brightness-[.96] focus-visible:outline-2 focus-visible:outline-offset-2 cursor-pointer; }
 .action-button-img { @apply w-7 h-7}
 .ufal-button-img { @apply w-10 h-10 cursor-pointer }
 .font-text { @apply font-black }
@@ -172,7 +172,7 @@ input, select, .result-value { @apply box-border h-[45px] rounded-[10px] border-
 .result-row { @apply mt-7 flex shrink-0 items-center gap-[7px] max-[760px]:flex-wrap max-[760px]:items-start; }
 .result-row h2 { @apply whitespace-nowrap; }
 .result-value { @apply flex h-[31px] min-w-[192px] items-center text-[13px]; }
-.copy-button { @apply relative flex h-7 w-[25px] items-center justify-center border-0 bg-transparent p-0 text-[22px] hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-turquoise cursor-pointer; }
+.copy-button { @apply relative flex h-7 w-[25px] items-center justify-center border-0 bg-transparent p-0 text-[22px] hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 cursor-pointer; }
 .copy-tooltip { @apply absolute -bottom-[31px] -left-3 hidden whitespace-nowrap rounded bg-[#242424] px-[6px] py-1 font-sans text-[12px] text-white; }
 .copy-button:hover .copy-tooltip, .copy-button:focus-visible .copy-tooltip { @apply block; }
 .page-footer { @apply absolute -right-px -bottom-px flex min-h-[72px] items-center gap-7 rounded-tl-[19px] rounded-br-[19px] border-[1.5px] border-r-0 border-b-0 py-0 pr-[27px] pl-4 max-[760px]:gap-2.5 max-[760px]:px-3; }

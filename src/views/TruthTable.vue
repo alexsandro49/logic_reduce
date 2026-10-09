@@ -52,13 +52,13 @@ function tableColorHelper(index: number, value1: string, value2: string) {
         </label>
         <div class="control-actions" aria-label="Ações da tabela">
           <button type="button" class="action-button" :style="{backgroundColor: configStore.getColor('active-button')}" aria-label="Gerar tabela">
-            <PhCheckFat :size="32" :color="configStore.getColor('background')" weight="fill" />
+            <PhCheckFat :size="32" :color="configStore.getColor('icon-color')" weight="fill" />
           </button>
           <button type="button" class="action-button" :style="{backgroundColor: configStore.getColor('active-button')}" aria-label="Limpar expressão" @click="clearExpression">
-            <PhTrash :size="32" :color="configStore.getColor('background')" weight="fill" />
+            <PhTrash :size="32" :color="configStore.getColor('icon-color')" weight="fill" />
           </button>
           <button type="button" class="action-button" :style="{backgroundColor: configStore.getColor('active-button')}" aria-label="Restaurar valores" @click="resetTable">
-            <PhArrowsClockwise :size="32" :color="configStore.getColor('background')" weight="bold" />
+            <PhArrowsClockwise :size="32" :color="configStore.getColor('icon-color')" weight="bold" />
           </button>
         </div>
       </div>
@@ -92,7 +92,7 @@ function tableColorHelper(index: number, value1: string, value2: string) {
 .control-field { @apply flex flex-col gap-[6px]; }
 .control-field > span { @apply text-[19px] font-extrabold uppercase tracking-[.1px]; }
 input, select { @apply box-border h-[49px] rounded-[11px] border-[1.5px] border-[#222] font-roboto text-[20px] outline-none; }
-input:focus-visible, select:focus-visible, button:focus-visible { @apply outline-[3px] outline-turquoise outline-offset-2; }
+input:focus-visible, select:focus-visible, button:focus-visible { @apply outline-[3px] outline-offset-2; }
 .expression-control input { @apply w-[308px] px-[13px]; }
 .display-control { @apply relative; }
 .display-control::after { @apply pointer-events-none absolute right-[10px] bottom-[17px] h-0 w-0 border-x-[5px] border-t-[9px] border-x-transparent border-t-[#222]; content: ''; }
@@ -105,7 +105,7 @@ table { @apply w-full min-w-[980px] border-separate border-spacing-0 rounded-[23
 th, td { @apply h-[73px] whitespace-nowrap border-b-[1.5px] border-[#222] px-3; }
 th { @apply h-[72px] font-medium; }
 td { @apply font-normal; }
-tbody tr.highlighted td { @apply bg-dark-cyan text-[#d8efeb]; }
+tbody tr.highlighted td { @apply text-[#d8efeb]; }
 tbody tr:last-child td { @apply border-b-0; }
 th:first-child { @apply rounded-tl-[23px]; }
 th:last-child { @apply rounded-tr-[23px]; }

@@ -70,15 +70,14 @@ function sidebarColorHelper(rule: Rule) {
 :global(html), :global(body), :global(#app) { @apply min-h-full; }
 .manual-page { @apply min-h-dvh overflow-hidden; }
 .manual-layout { @apply flex min-h-[calc(100dvh-74px)] border-[1.5px] border-t-0 border-[#222]; }
-.sidebar { @apply flex w-[231px] flex-[0_0_231px] flex-col border-r-[1.5px] border-[#222] bg-light-cyan; }
+.sidebar { @apply flex w-[231px] flex-[0_0_231px] flex-col border-r-[1.5px] border-[#222]; }
 .sidebar h1 { @apply m-0 border-b-[1.5px] border-[#222] px-3 pt-[23px] pb-[21px] text-center font-roboto text-[19px] font-extrabold uppercase leading-[1.28]; }
 .sidebar nav { @apply flex flex-col; }
 .rule-link { @apply min-h-[46px] cursor-pointer border-0 border-b-[1.5px] border-[#222] bg-transparent px-[11px] text-left font-roboto text-[25px] font-normal leading-none tracking-[.2px] text-[#282d2d]; }
 .rule-link:hover, .rule-link:focus-visible { @apply bg-[#c9f0e9] outline-none; }
-.rule-link.active { @apply bg-turquoise; }
 .topic { @apply mt-auto flex flex-col text-[19px] tracking-[.2px]; }
 .topic span { @apply px-[11px] pt-0 pb-px; }
-.topic a { @apply border-t-[1.5px] border-[#222] px-[23px] py-[10px] text-light-cyan no-underline; }
+.topic a { @apply border-t-[1.5px] border-[#222] px-[23px] py-[10px] no-underline; }
 .topic a:hover { @apply bg-[#0d8186]; }
 .content { @apply min-w-0 flex-1 pt-[14px] pr-[22px] pb-[46px] pl-[22px]; }
 .content h2 { @apply m-0 text-[61px] font-black leading-[1.12] tracking-[.2px]; }
