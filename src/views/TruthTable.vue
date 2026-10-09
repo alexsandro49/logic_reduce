@@ -51,13 +51,13 @@ function tableColorHelper(index: number, value1: string, value2: string) {
           </select>
         </label>
         <div class="control-actions" aria-label="Ações da tabela">
-          <button type="button" class="action-button" :style="{backgroundColor: configStore.getColor('active-button')}" aria-label="Gerar tabela">
+          <button type="button" class="action-button" :style="{backgroundColor: configStore.getColor('action-button')}" aria-label="Gerar tabela">
             <PhCheckFat :size="32" :color="configStore.getColor('icon-color')" weight="fill" />
           </button>
-          <button type="button" class="action-button" :style="{backgroundColor: configStore.getColor('active-button')}" aria-label="Limpar expressão" @click="clearExpression">
+          <button type="button" class="action-button" :style="{backgroundColor: configStore.getColor('action-button')}" aria-label="Limpar expressão" @click="clearExpression">
             <PhTrash :size="32" :color="configStore.getColor('icon-color')" weight="fill" />
           </button>
-          <button type="button" class="action-button" :style="{backgroundColor: configStore.getColor('active-button')}" aria-label="Restaurar valores" @click="resetTable">
+          <button type="button" class="action-button" :style="{backgroundColor: configStore.getColor('action-button')}" aria-label="Restaurar valores" @click="resetTable">
             <PhArrowsClockwise :size="32" :color="configStore.getColor('icon-color')" weight="bold" />
           </button>
         </div>

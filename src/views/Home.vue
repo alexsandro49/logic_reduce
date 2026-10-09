@@ -93,13 +93,13 @@ function randomExpressionHelper() {
               </option>
             </select>
           </label>
-          <button @click="simplification" class="action-button" :style="{backgroundColor: configStore.getColor('active-button')}" type="button" aria-label="Simplificar expressão" :disabled="isSimplifying">
+          <button @click="simplification" class="action-button" :style="{backgroundColor: configStore.getColor('action-button')}" type="button" aria-label="Simplificar expressão" :disabled="isSimplifying">
             <PhCheckFat :size="32" :color="configStore.getColor('icon-color')" weight="fill" />
           </button>
-          <button @click="clearData" class="action-button" :style="{backgroundColor: configStore.getColor('active-button')}" type="button" aria-label="Alternar tema">
+          <button @click="clearData" class="action-button" :style="{backgroundColor: configStore.getColor('action-button')}" type="button" aria-label="Alternar tema">
             <PhTrash :size="32" :color="configStore.getColor('icon-color')" weight="fill" />
           </button>
-          <button class="action-button" :style="{backgroundColor: configStore.getColor('active-button')}" type="button" aria-label="Expressão aleatória" :disabled="isSimplifying" @click="randomExpressionHelper">
+          <button class="action-button" :style="{backgroundColor: configStore.getColor('action-button')}" type="button" aria-label="Expressão aleatória" :disabled="isSimplifying" @click="randomExpressionHelper">
             <PhArrowsClockwise :size="32" :color="configStore.getColor('icon-color')" weight="bold" />
           </button>
         </div>

@@ -28,7 +28,7 @@ async function openExternalLink(event: MouseEvent, url: string) {
 };
 
 function sidebarColorHelper(rule: Rule) {
-  const value = (selectedName.value === rule.name) ? 'active-button' : 'transparent'
+  const value = (selectedName.value === rule.name) ? 'action-button' : 'transparent'
   return configStore.getColor(value)
 }
 </script>
