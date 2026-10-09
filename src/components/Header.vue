@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import blackLogo from '@/assets/circuitry.svg'
-import whiteLogo from '@/assets/circuitry-white.svg'
-import moonIcon from '@/assets/moon.svg'
-import sunIcon from '@/assets/sun.svg'
-import paintRollerIcon from '@/assets/paint-roller.svg'
 import { useRouter } from 'vue-router'
 import { useConfigStore } from '../stores/config'
+import {PhCircuitry, PhMoon, PhPalette, PhSun} from '@phosphor-icons/vue'
 
 const props = defineProps<{
   activeWindowButton: number;
@@ -30,7 +26,7 @@ function buttonColorHelper(value: number) {
 <template>
   <header class="app-header" :style="{backgroundColor: configStore.getColor('base')}">
     <a class="brand" href="#" aria-label="Logic Reduce">
-      <img :src="configStore.whiteLogo ? whiteLogo : blackLogo" alt="Program logo" aria-hidden="true" />
+      <PhCircuitry :size="44" :color="configStore.whiteLogo ? '#FFFFFF' : '#000000'" weight="fill" />
     </a>
 
     <nav v-for="(link, index) in windowButtons" v-key="index" class="main-navigation" aria-label="Navegação principal">
@@ -39,13 +35,13 @@ function buttonColorHelper(value: number) {
 
     <div class="header-actions">
       <button v-if="configStore.darkTheme == true" @click="configStore.darkTheme = !configStore.darkTheme" class="icon-button hover:-translate-y-px hover:brightness-[.96]" :style="{backgroundColor: configStore.getColor('navigation-link')}" type="button" aria-label="Alternar tema">
-        <img :src="sunIcon" alt="Moon icon" aria-hidden="true" />
+        <PhSun :size="28" :color="configStore.getColor('icon-color')" weight="fill" />
       </button>
       <button v-else class="icon-button hover:-translate-y-px hover:brightness-[.96]" @click="configStore.darkTheme = !configStore.darkTheme" :style="{backgroundColor: configStore.getColor('navigation-link')}" type="button" aria-label="Alternar tema">
-        <img :src="moonIcon" alt="Moon icon" aria-hidden="true" />
+        <PhMoon :size="28" :color="configStore.getColor('icon-color')" weight="fill" />
       </button>
       <button class="icon-button hover:-translate-y-px hover:brightness-[.96]" @click="configStore.nextTheme()" :style="{backgroundColor: configStore.getColor('navigation-link')}" type="button" aria-label="Imprimir página">
-        <img :src="paintRollerIcon" alt="Sun icon" aria-hidden="true" />
+        <PhPalette :size="28" :color="configStore.getColor('icon-color')" weight="fill" />
       </button>
     </div>
   </header>
@@ -74,12 +70,6 @@ function buttonColorHelper(value: number) {
   width: 38px;
 }
 
-.brand img {
-  display: block;
-  height: 44px;
-  width: 44px;
-}
-
 .main-navigation {
   align-items: center;
   display: flex;
@@ -90,7 +80,6 @@ function buttonColorHelper(value: number) {
 .navigation-link,
 .icon-button {
   border: 1.5px solid #222;
-  color: #222;
   font-family: var(--font-roboto);
   font-size: 1.1em;
   font-weight: 500;

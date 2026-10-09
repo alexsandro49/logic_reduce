@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import HeaderComponent from '../components/Header.vue'
-import checkIcon from '@/assets/check-fat.svg'
-import deleteIcon from '@/assets/trash.svg'
-import refreshIcon from '@/assets/arrows-clockwise.svg'
 import { useConfigStore } from '../stores/config.ts'
 import { TruthTableRow } from '../utils/types.ts'
+import { PhArrowsClockwise, PhCheckFat, PhTrash } from '@phosphor-icons/vue';
 
 const configStore = useConfigStore();
 
@@ -31,8 +29,8 @@ const rows: TruthTableRow[] = [
 function clearExpression() { expression.value = '' }
 function resetTable() { expression.value = '~((~A + B) & (~B + C))'; display.value = 'complete' }
 
-function tableColorHelper(index: number) {
-  const value = (index % 2 === 0) ? 'hightlighted-cell' : 'transparent'
+function tableColorHelper(index: number, value1: string, value2: string) {
+  const value = (index % 2 === 0) ? value1 : value2
   return configStore.getColor(value)
 }
 </script>
@@ -53,9 +51,15 @@ function tableColorHelper(index: number) {
           </select>
         </label>
         <div class="control-actions" aria-label="Ações da tabela">
-          <button type="button" class="action-button" aria-label="Gerar tabela"><img :src="checkIcon" alt="" /></button>
-          <button type="button" class="action-button" aria-label="Limpar expressão" @click="clearExpression"><img :src="deleteIcon" alt="" /></button>
-          <button type="button" class="action-button" aria-label="Restaurar valores" @click="resetTable"><img :src="refreshIcon" alt="" /></button>
+          <button type="button" class="action-button" :style="{backgroundColor: configStore.getColor('active-button')}" aria-label="Gerar tabela">
+            <PhCheckFat :size="32" :color="configStore.getColor('background')" weight="fill" />
+          </button>
+          <button type="button" class="action-button" :style="{backgroundColor: configStore.getColor('active-button')}" aria-label="Limpar expressão" @click="clearExpression">
+            <PhTrash :size="32" :color="configStore.getColor('background')" weight="fill" />
+          </button>
+          <button type="button" class="action-button" :style="{backgroundColor: configStore.getColor('active-button')}" aria-label="Restaurar valores" @click="resetTable">
+            <PhArrowsClockwise :size="32" :color="configStore.getColor('background')" weight="bold" />
+          </button>
         </div>
       </div>
       <section class="truth-table-card" :style="{backgroundColor: configStore.getColor('board')}" aria-label="Resultados da tabela verdade">
@@ -67,7 +71,7 @@ function tableColorHelper(index: number) {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(row, index) in rows" :key="`${row.a}-${row.b}-${row.c}`" :style="{backgroundColor: tableColorHelper(index)}">
+                    <tr v-for="(row, index) in rows" :key="`${row.a}-${row.b}-${row.c}`" :style="{backgroundColor: tableColorHelper(index, 'hightlighted-cell', 'transparent'), color: tableColorHelper(index, 'light-cell-text', 'dark-cell-text')}">
                         <td v-for="column in columns" :key="column.key">{{ row[column.key] }}</td>
                     </tr>
                 </tbody>
@@ -93,9 +97,8 @@ input:focus-visible, select:focus-visible, button:focus-visible { @apply outline
 .display-control { @apply relative; }
 .display-control::after { @apply pointer-events-none absolute right-[10px] bottom-[17px] h-0 w-0 border-x-[5px] border-t-[9px] border-x-transparent border-t-[#222]; content: ''; }
 .display-control select { @apply w-[150px] appearance-none py-0 pr-6 pl-2 uppercase; }
-.action-button { @apply grid size-12 cursor-pointer place-items-center rounded-[11px] border-[1.5px] border-[#222] bg-turquoise; }
+.action-button { @apply grid size-12 cursor-pointer place-items-center rounded-[11px] border-[1.5px] border-[#222]; }
 .action-button:hover { @apply -translate-y-px brightness-[.96]; }
-.action-button img { @apply size-[27px]; }
 .truth-table-card { @apply mt-[13px] box-border min-h-[768px] flex-1 overflow-hidden rounded-[23px] border-[1.5px] px-[30px] pt-[28px] pb-[60px]; }
 .table-scroll { @apply overflow-x-auto; }
 table { @apply w-full min-w-[980px] border-separate border-spacing-0 rounded-[23px] border-[1.5px] border-[#222] text-center text-[42px] leading-none; }

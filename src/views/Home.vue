@@ -4,18 +4,12 @@ import { invoke } from '@tauri-apps/api/core'
 
 type ReductionStep = { title: string; expression: string; description: string }
 
-import checkIcon from '@/assets/check-fat.svg'
-import deleteIcon from '@/assets/trash.svg'
-import refreshIcon from '@/assets/arrows-clockwise.svg'
-import copyBlackIcon from '@/assets/copy-black.svg'
-import copyCyanIcon from '@/assets/copy-cyan.svg'
 import ufalIcon from '@/assets/ufal-logo.svg'
-import bookIcon from '@/assets/book.svg'
-import githubIcon from '@/assets/github-logo.svg'
 import { Ref, ref } from 'vue';
 import { useConfigStore } from '../stores/config.ts';
 import { generateRandomExpression } from '../utils/expressionGenerator.ts';
 import { stepStruct } from '../utils/types.ts';
+import { PhArrowsClockwise, PhBook, PhCheckFat, PhCopySimple, PhGithubLogo, PhTrash } from '@phosphor-icons/vue';
 
 const configStore = useConfigStore();
 
@@ -93,20 +87,20 @@ function randomExpressionHelper() {
         <div class="notation-control">
           <label class="field notation-field">
             <span class="font-text" :style="{color: configStore.getColor('text')}">Notação:</span>
-            <select v-model="notation" aria-label="Notação">
+            <select v-model="notation" :style="{ backgroundColor: configStore.getColor('input')}" aria-label="Notação">
               <option v-for="notation in notations" :value="notation.value" :key="notation.value">
                 {{ notation.text }}
               </option>
             </select>
           </label>
           <button @click="simplification" class="action-button" :style="{backgroundColor: configStore.getColor('active-button')}" type="button" aria-label="Simplificar expressão" :disabled="isSimplifying">
-            <img :src="checkIcon" class="action-button-img" alt="" aria-hidden="true" />
+            <PhCheckFat :size="32" :color="configStore.getColor('background')" weight="fill" />
           </button>
           <button @click="clearData" class="action-button" :style="{backgroundColor: configStore.getColor('active-button')}" type="button" aria-label="Alternar tema">
-            <img :src="deleteIcon" class="action-button-img" alt="Moon icon" aria-hidden="true" />
+            <PhTrash :size="32" :color="configStore.getColor('background')" weight="fill" />
           </button>
           <button class="action-button" :style="{backgroundColor: configStore.getColor('active-button')}" type="button" aria-label="Expressão aleatória" :disabled="isSimplifying" @click="randomExpressionHelper">
-            <img :src="refreshIcon" class="action-button-img" alt="Moon icon" aria-hidden="true" />
+            <PhArrowsClockwise :size="32" :color="configStore.getColor('background')" weight="bold" />
           </button>
         </div>
       </div>
@@ -128,21 +122,20 @@ function randomExpressionHelper() {
         <h2 class="font-text" :style="{color: configStore.getColor('text')}">Forma simplificada:</h2>
         <output class="result-value" :style="{backgroundColor: configStore.getColor('result-value')}">{{ result }}</output>
         <button class="copy-button" type="button" aria-label="Alternar tema">
-          <img v-if="configStore.darkTheme" :src="copyCyanIcon" alt="Moon icon" aria-hidden="true" />
-          <img v-else :src="copyBlackIcon" alt="Moon icon" aria-hidden="true" />
+          <PhCopySimple :size="32" :color="configStore.getColor('text')" weight="fill" />
         </button>
       </section>
     </section>
     <footer class="page-footer" :style="{borderColor: configStore.getColor('text')}">
       <strong :style="{color: configStore.getColor('text')}">2026</strong>
-      <button class="action-button" :style="{backgroundColor: configStore.getColor('navigation-link')}" type="button" aria-label="Alternar tema">
+      <button class="action-button" :style="{backgroundColor: configStore.getColor('footer-buttons')}" type="button" aria-label="Alternar tema">
         <img :src="ufalIcon" class="ufal-button-img" alt="Moon icon" aria-hidden="true" />
       </button>
-      <button class="action-button" :style="{backgroundColor: configStore.getColor('navigation-link')}" type="button" aria-label="Alternar tema">
-        <img :src="bookIcon" class="action-button-img" alt="Moon icon" aria-hidden="true" />
+      <button class="action-button" :style="{backgroundColor: configStore.getColor('footer-buttons')}" type="button" aria-label="Alternar tema">
+        <PhBook :size="32" :color="configStore.getColor('background')" weight="fill" />
       </button>
-      <button class="action-button" :style="{backgroundColor: configStore.getColor('navigation-link')}" type="button" aria-label="Alternar tema">
-        <img :src="githubIcon" class="action-button-img" alt="Moon icon" aria-hidden="true" />
+      <button class="action-button" :style="{backgroundColor: configStore.getColor('footer-buttons')}" type="button" aria-label="Alternar tema">
+        <PhGithubLogo :size="32" :color="configStore.getColor('background')" weight="fill" />
       </button>
     </footer>
   </main>
@@ -188,9 +181,5 @@ input, select, .result-value { @apply box-border h-[45px] rounded-[10px] border-
 
 input::placeholder {
   color: var(--placeholder-color);
-}
-
-.action-button:hover {
-  outline: 2px solid var(--border-color);
 }
 </style>
