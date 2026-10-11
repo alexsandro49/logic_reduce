@@ -11,18 +11,18 @@ export const useConfigStore = defineStore(
     const themes: Color[][] = [
       [
         { color: '#11999E', uses: ['base'] },
-        { color: '#E4F9F5', uses: ['board', 'result-value', 'dark-text', 'input', 'navigation-link'] },
+        { color: '#E4F9F5', uses: ['board', 'header-tab', 'result-value', 'dark-text', 'input', 'navigation-link'] },
         { color: '#30E3CA', uses: ['action-button', 'hightlighted-cell', 'footer-buttons-background',
                                     'header-active-tab'] },
         { color: '#40514E', uses: [] },
         { color: '#343A40', uses: ['text', 'input-text', 'header-table', 'background', 'dark-cell-text', 
                                     'light-cell-text', 'icon-color', 'footer-buttons-color'] },
-        { color: '#00000000', uses: ['transparent', 'header-tab'] },
+        { color: '#00000000', uses: ['transparent'] },
       ],
       [
         { color: '#071A52', uses: ['base'] },
-        { color: '#E4FBFF', uses: ['board', 'result-value', 'input'] },
-        { color: '#A7FF83', uses: ['action-button', 'dark-text', 'footer-buttons-background',
+        { color: '#E4FBFF', uses: ['board', 'result-value', 'input', 'dark-text'] },
+        { color: '#A7FF83', uses: ['action-button', 'footer-buttons-background',
                                     'header-active-tab'] },
         { color: '#086972', uses: [] },
         { color: '#17B978', uses: ['navigation-link', 'hightlighted-cell', 'header-tab'] },
@@ -42,24 +42,23 @@ export const useConfigStore = defineStore(
         { color: '#00000000', uses: ['transparent'] },
       ],
       [
-        { color: '#7868E6', uses: ['base', 'action-button', 'header-table', 'dark-cell-text', 
-                                    'footer-buttons-background'] },
-        { color: '#B8B5FF', uses: ['hightlighted-cell', 'navigation-link', 'header-tab', 
+        { color: '#7868E6', uses: ['base', 'action-button', 'dark-cell-text', 
+                                    'footer-buttons-background', 'hightlighted-cell'] },
+        { color: '#B8B5FF', uses: ['navigation-link', 'header-tab', 
                                     'dark-text'] },
-        { color: '#EDEEF7', uses: ['header-active-tab'] },
-        { color: '#E4FBFF', uses: ['board', 'input', 'result-value', 'light-cell-text'] },
+        { color: '#EDEEF7', uses: ['board', 'input'] },
+        { color: '#E4FBFF', uses: ['header-active-tab', 'result-value', 'light-cell-text'] },
         { color: '#343A40', uses: ['background', 'text', 'icon-color', 'footer-buttons-color', 
-                                    'input-text'] },
+                                    'input-text', 'header-table'] },
         { color: '#00000000', uses: ['transparent'] },
       ],
       [
-        { color: '#850E35', uses: ['base', 'header-table', 'dark-cell-text'] },
-        { color: '#EE6983', uses: ['header-active-tab', 'hightlighted-cell', 'dark-text', 
-                                    'action-button', 'footer-buttons-background'] },
-        { color: '#FFC4C4', uses: ['header-tab', 'navigation-link'] },
-        { color: '#FFF5E4', uses: ['board', 'input', 'result-value', 'light-cell-text'] },
-        { color: '#343A40', uses: ['background', 'text', 'icon-color', 'footer-buttons-color', 
-                                    'input-text'] },
+        { color: '#f8639a', uses: ['base', 'action-button', 'footer-buttons-background'] },
+        { color: '#e9c0e8', uses: ['header-active-tab'] },
+        { color: '#bbd4f2', uses: ['header-tab', 'navigation-link', 'hightlighted-cell'] },
+        { color: '#dddddd', uses: ['board', 'dark-text', 'input', 'result-value'] },
+        { color: '#343A40', uses: ['background', 'text', 'icon-color', 'footer-buttons-color',
+                                    'input-text', 'dark-cell-text', 'light-cell-text', 'header-table'] },
         { color: '#00000000', uses: ['transparent'] },
       ],
       [
@@ -67,14 +66,13 @@ export const useConfigStore = defineStore(
                                     'text', 'input-text', 'footer-buttons-color'] },
         { color: '#393E46', uses: ['hightlighted-cell', 'background'] },
         { color: '#FFD369', uses: ['header-active-tab', 'navigation-link', 'action-button',
-                                    'footer-buttons-background', 'dark-text'] },
-        { color: '#EEEEEE', uses: ['board', 'header-tab', 'input', 'result-value', 'light-cell-text'] },
+                                    'footer-buttons-background'] },
+        { color: '#EEEEEE', uses: ['board', 'header-tab', 'input', 'result-value', 'light-cell-text', 'dark-text'] },
         { color: '#00000000', uses: ['transparent'] },
       ]
     ]
 
     const themeColors = computed(() => themes[currentTheme.value]);
-    const whiteLogo = computed(() => (currentTheme.value == 0) ? 0 : 1);
 
     function nextTheme() {
       currentTheme.value = (currentTheme.value + 1) % themes.length;
@@ -90,7 +88,6 @@ export const useConfigStore = defineStore(
       darkTheme,
       nextTheme,
       themeColors,
-      whiteLogo,
       getColor
     };
   },

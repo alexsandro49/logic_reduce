@@ -71,6 +71,11 @@ function randomExpressionHelper() {
   clearData()
   expression.value = generateRandomExpression(expression)
 }
+
+function footerColorHelper(): string {
+  const value = configStore.darkTheme ? "board" : "icon-color"
+  return configStore.getColor(value);
+}
 </script>
 
 <template>
@@ -126,8 +131,8 @@ function randomExpressionHelper() {
         </button>
       </section>
     </section>
-    <footer class="page-footer" :style="{borderColor: configStore.getColor('text')}">
-      <strong :style="{color: configStore.getColor('text')}">2026</strong>
+    <footer class="page-footer" :style="{borderColor: footerColorHelper() }">
+      <strong :style="{color: footerColorHelper()}">2026</strong>
       <button class="action-button" :style="{backgroundColor: configStore.getColor('footer-buttons-background')}" type="button" aria-label="Alternar tema">
         <img :src="ufalIcon" class="ufal-button-img" alt="Moon icon" aria-hidden="true" />
       </button>
@@ -176,7 +181,7 @@ input, select, .result-value { @apply box-border h-[45px] rounded-[10px] border-
 .copy-tooltip { @apply absolute -bottom-[31px] -left-3 hidden whitespace-nowrap rounded bg-[#242424] px-[6px] py-1 font-sans text-[12px] text-white; }
 .copy-button:hover .copy-tooltip, .copy-button:focus-visible .copy-tooltip { @apply block; }
 .page-footer { @apply absolute -right-px -bottom-px flex min-h-[72px] items-center gap-7 rounded-tl-[19px] rounded-br-[19px] border-[1.5px] border-r-0 border-b-0 py-0 pr-[27px] pl-4 max-[760px]:gap-2.5 max-[760px]:px-3; }
-.page-footer strong { @apply text-[36px] leading-none font-bold; }
+.page-footer strong { @apply text-[36px] leading-none font-black; }
 .page-footer button { @apply w-[59px]; }
 
 input::placeholder {

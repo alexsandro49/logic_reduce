@@ -26,7 +26,7 @@ function buttonColorHelper(value: number) {
 <template>
   <header class="app-header" :style="{backgroundColor: configStore.getColor('base')}">
     <a class="brand" href="#" aria-label="Logic Reduce">
-      <PhCircuitry :size="44" :color="configStore.whiteLogo ? '#FFFFFF' : '#000000'" weight="fill" />
+      <PhCircuitry :size="44" class="text-white" weight="fill" />
     </a>
 
     <nav v-for="(link, index) in windowButtons" v-key="index" class="main-navigation" aria-label="Navegação principal">
