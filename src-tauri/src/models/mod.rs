@@ -4,3 +4,4 @@ pub mod notation;
 pub mod operation;
 pub mod parser;
 pub mod rewrite;
+pub mod truth_table;

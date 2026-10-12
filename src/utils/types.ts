@@ -1,13 +1,22 @@
 export interface stepStruct {
   rule_name: string,
   after_rule: string
-}
+};
 
-export type Rule = { name: string; description: string; examples: string[]; notes: string[] }
+export type Rule = { name: string; description: string; examples: string[]; notes: string[] };
+
+export type Color = { color: string, uses: string[] };
+
+export type TruthTableRows = number[];
 
 export type TruthTableRow = {
-  a: number; b: number; c: number; notA: number; notB: number
-  notAOrB: number; notBOrC: number; conjunction: number; result: number
+  inputs: number[];
+  outputs: number[];
 }
 
-export type Color = { color: string, uses: string[] }
+export type TruthTable = {
+    inputs: string[],
+    columns: string[],
+    rows: TruthTableRow[],
+    total_rows: number,
+}

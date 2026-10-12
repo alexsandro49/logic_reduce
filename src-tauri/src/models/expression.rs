@@ -1,4 +1,5 @@
 use crate::models::operation;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Expr {
@@ -6,6 +7,30 @@ pub enum Expr {
     Const(bool),
     Not(Box<Expr>),
     Bin(Box<Expr>, operation::Op, Box<Expr>),
+}
+
+impl Expr {
+    /// Evaluates an expression for one input combination, as in Logisim's
+    /// Expression.evaluate(Assignments). Missing inputs are reported explicitly.
+    pub fn evaluate(&self, assignments: &HashMap<String, bool>) -> Result<bool, String> {
+        match self {
+            Self::Var(name) => assignments
+                .get(name)
+                .copied()
+                .ok_or_else(|| format!("valor não informado para a variável '{name}'")),
+            Self::Const(value) => Ok(*value),
+            Self::Not(inner) => Ok(!inner.evaluate(assignments)?),
+            Self::Bin(left, op, right) => {
+                let left = left.evaluate(assignments)?;
+                let right = right.evaluate(assignments)?;
+                Ok(match op {
+                    operation::Op::And => left & right,
+                    operation::Op::Or => left | right,
+                    operation::Op::Xor => left ^ right,
+                })
+            }
+        }
+    }
 }
 
 pub fn not(e: Expr) -> Expr {
@@ -44,11 +69,9 @@ pub fn ordering_key(e: &Expr) -> String {
         Expr::Var(name) => format!("0:{name}"),
         Expr::Const(value) => format!("1:{}", u8::from(*value)),
         Expr::Not(inner) => format!("2:{}", ordering_key(inner)),
-        Expr::Bin(left, op, right) => format!(
-            "3:{op:?}:{}:{}",
-            ordering_key(left),
-            ordering_key(right)
-        ),
+        Expr::Bin(left, op, right) => {
+            format!("3:{op:?}:{}:{}", ordering_key(left), ordering_key(right))
+        }
     }
 }
 

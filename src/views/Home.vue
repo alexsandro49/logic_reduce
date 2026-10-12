@@ -10,10 +10,11 @@ import { useConfigStore } from '../stores/config.ts';
 import { generateRandomExpression } from '../utils/expressionGenerator.ts';
 import { stepStruct } from '../utils/types.ts';
 import { PhArrowsClockwise, PhBook, PhCheckFat, PhCopySimple, PhGithubLogo, PhTrash } from '@phosphor-icons/vue';
+import { useSimplificationStore } from '../stores/simplification.ts';
 
 const configStore = useConfigStore();
+const simplificationStore = useSimplificationStore();
 
-const expression = ref('')
 const result = ref('');
 const submittedExpression = ref('');
 const error = ref('');
@@ -32,7 +33,7 @@ const notation = ref("default");
 const steps: Ref<ReductionStep[]> = ref([]);
 
 async function simplification() {
-  const source = expression.value.trim() || '~((~A + B) & (~B + C))';
+  const source = simplificationStore.expression.trim() || simplificationStore.placeholder;
 
   isSimplifying.value = true;
   error.value = '';
@@ -64,12 +65,13 @@ function clearData() {
   error.value = '';
   steps.value = [];
   result.value = '';
-  expression.value = ''
+  simplificationStore.expression = ''
 }
 
 function randomExpressionHelper() {
-  clearData()
-  expression.value = generateRandomExpression(expression)
+  clearData();
+  simplificationStore.expression = generateRandomExpression(simplificationStore.expression);
+  simplification();
 }
 
 function footerColorHelper(): string {
@@ -85,7 +87,7 @@ function footerColorHelper(): string {
       <div class="controls-row">
         <label class="field expression-field">
           <span class="font-text" :style="{color: configStore.getColor('text')}">Expressão booleana:</span>
-          <input v-model="expression" placeholder="~((~A + B) & (~B + C))" 
+          <input v-model="simplificationStore.expression" placeholder="~((~A + B) & (~B + C))" 
             :style="{ backgroundColor: configStore.getColor('input'), color: configStore.getColor('input-text'), 
             '--placeholder-color': configStore.getColor('input-text')}" type="text" aria-label="Expressão booleana" />
         </label>

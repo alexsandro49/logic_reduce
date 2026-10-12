@@ -79,12 +79,12 @@ export const useConfigStore = defineStore(
 
     function getColor(use: string): string {
       const variant = (darkTheme.value && use == 'text') ? 'dark-' : '';
-      console.log(`${variant}${use}`)
       return themeColors.value.find((color: Color) => color.uses.includes(`${variant}${use}`))!.color
     }
 
     return {
       darkTheme,
+      currentTheme,
       nextTheme,
       themeColors,
       getColor

@@ -24,13 +24,13 @@ function randomOperand(depth: number): string {
   return `(${left} ${operator} ${right})`;
 }
 
-export function generateRandomExpression(expression: Ref<string>) {
+export function generateRandomExpression(expression: string) {
   const depth = Math.random() < 0.5 ? 2 : 3;
   const left = randomOperand(depth - 1);
   const operator = randomItem(binaryOperators);
   const right = randomOperand(depth - 1);
 
-  expression.value = `(${left} ${operator} ${right})`;
+  expression = `(${left} ${operator} ${right})`;
 
-  return expression.value
+  return expression
 }
