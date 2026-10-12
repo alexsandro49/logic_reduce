@@ -32,16 +32,6 @@ export const useConfigStore = defineStore(
         { color: '#00000000', uses: ['transparent'] },
       ],
       [
-        { color: '#222831', uses: ['base', 'text', 'input-text', 'header-table', 'dark-cell-text', 
-                                    'icon-color'] },
-        { color: '#30475E', uses: ['background', 'hightlighted-cell', 'footer-buttons-color'] },
-        { color: '#F05454', uses: ['action-button', 'footer-buttons', 'footer-buttons-background', 
-                                    'header-active-tab'] },
-        { color: '#DDDDDD', uses: ['board', 'input', 'navigation-link', 'result-value', 'dark-text',
-                                    'light-cell-text', 'header-tab'] },
-        { color: '#00000000', uses: ['transparent'] },
-      ],
-      [
         { color: '#136b3d', uses: ['base', 'dark-cell-text', 'hightlighted-cell'] },
         { color: '#9ed880', uses: ['navigation-link', 'header-tab', 'action-button',
                                     'footer-buttons-background'] },
@@ -58,6 +48,16 @@ export const useConfigStore = defineStore(
         { color: '#dddddd', uses: ['board', 'dark-text', 'input', 'result-value'] },
         { color: '#343A40', uses: ['background', 'text', 'icon-color', 'footer-buttons-color',
                                     'input-text', 'dark-cell-text', 'light-cell-text', 'header-table'] },
+        { color: '#00000000', uses: ['transparent'] },
+      ],
+      [
+        { color: '#222831', uses: ['base', 'text', 'input-text', 'header-table', 'dark-cell-text', 
+                                    'icon-color'] },
+        { color: '#30475E', uses: ['background', 'hightlighted-cell', 'footer-buttons-color'] },
+        { color: '#F05454', uses: ['action-button', 'footer-buttons', 'footer-buttons-background', 
+                                    'header-active-tab'] },
+        { color: '#DDDDDD', uses: ['board', 'input', 'navigation-link', 'result-value', 'dark-text',
+                                    'light-cell-text', 'header-tab'] },
         { color: '#00000000', uses: ['transparent'] },
       ],
       [
