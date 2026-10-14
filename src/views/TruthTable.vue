@@ -23,8 +23,8 @@ function resetTable() {
   display.value = 'complete' 
 }
 
-function tableColorHelper(index: number, value1: string, value2: string) {
-  const value = (index % 2 === 0) ? value1 : value2
+function tableColorHelper(index: number, color1: string, color2: string) {
+  const value = (index % 2 === 0) ? color1 : color2
   return configStore.getColor(value)
 }
 

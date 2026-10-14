@@ -127,7 +127,7 @@ function footerColorHelper(): string {
       </section>
       <section class="result-row" aria-label="Resultado simplificado">
         <h2 class="font-text" :style="{color: configStore.getColor('text')}">Forma simplificada:</h2>
-        <output class="result-value" :style="{backgroundColor: configStore.getColor('result-value')}">{{ result }}</output>
+        <output class="result-value" :style="{backgroundColor: configStore.getColor('board')}">{{ result }}</output>
         <button class="copy-button" type="button" aria-label="Alternar tema">
           <PhCopySimple :size="32" :color="configStore.getColor('text')" weight="fill" />
         </button>
