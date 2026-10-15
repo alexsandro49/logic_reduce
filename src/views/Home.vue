@@ -112,12 +112,15 @@ async function copyResult() {
           </label>
           <button @click="simplification" class="action-button" :style="{backgroundColor: configStore.getColor('action-button')}" type="button" aria-label="Simplificar expressão" :disabled="isSimplifying">
             <PhCheckFat :size="32" :color="configStore.getColor('icon-color')" weight="fill" />
+            <span class="tooltip" :style="{backgroundColor: configStore.getColor('base')}">SIMPLIFICAR</span>
           </button>
           <button @click="clearData" class="action-button" :style="{backgroundColor: configStore.getColor('action-button')}" type="button" aria-label="Alternar tema">
             <PhTrash :size="32" :color="configStore.getColor('icon-color')" weight="fill" />
+            <span class="tooltip" :style="{backgroundColor: configStore.getColor('base')}">LIMPAR</span>
           </button>
           <button class="action-button" :style="{backgroundColor: configStore.getColor('action-button')}" type="button" aria-label="Expressão aleatória" :disabled="isSimplifying" @click="randomExpressionHelper">
             <PhArrowsClockwise :size="32" :color="configStore.getColor('icon-color')" weight="bold" />
+            <span class="tooltip" :style="{backgroundColor: configStore.getColor('base')}">ALEATÓRIO</span>
           </button>
         </div>
       </div>
@@ -140,7 +143,7 @@ async function copyResult() {
         <output class="result-value" :style="{backgroundColor: configStore.getColor('board')}">{{ result }}</output>
         <button class="copy-button" type="button" aria-label="Alternar tema" @click="copyResult" :disabled="result === ''">
           <PhCopySimple :size="32" :color="configStore.getColor('text')" weight="fill" />
-          <span class="copy-tooltip" :style="{backgroundColor: configStore.getColor('base')}">{{ copyButtonTittle }}</span>
+          <span class="tooltip" :style="{backgroundColor: configStore.getColor('base')}">{{ copyButtonTittle }}</span>
         </button>
       </section>
     </section>
@@ -148,12 +151,15 @@ async function copyResult() {
       <strong :style="{color: footerColorHelper()}">2026</strong>
       <button class="action-button" :style="{backgroundColor: configStore.getColor('footer-buttons-background')}" type="button" aria-label="Alternar tema">
         <img :src="ufalIcon" class="ufal-button-img" alt="Moon icon" aria-hidden="true" />
+        <span class="footer-tooltip" :style="{backgroundColor: configStore.getColor('base')}">UFAL</span>
       </button>
       <button class="action-button" :style="{backgroundColor: configStore.getColor('footer-buttons-background')}" type="button" aria-label="Alternar tema">
         <PhBook :size="32" :color="configStore.getColor('footer-buttons-color')" weight="fill" />
+        <span class="footer-tooltip" :style="{backgroundColor: configStore.getColor('base')}">TRABALHO RELACIONADO</span>
       </button>
       <button class="action-button" :style="{backgroundColor: configStore.getColor('footer-buttons-background')}" type="button" aria-label="Alternar tema">
         <PhGithubLogo :size="32" :color="configStore.getColor('footer-buttons-color')" weight="fill" />
+        <span class="footer-tooltip" :style="{backgroundColor: configStore.getColor('base')}">REPOSITÓRIO</span>
       </button>
     </footer>
   </main>
@@ -176,6 +182,7 @@ input, select, .result-value { @apply box-border h-[45px] rounded-[10px] border-
 .notation-field { @apply relative max-[760px]:flex-1 after:pointer-events-none after:absolute after:right-[14px] after:bottom-[18px] after:border-x-[5px] after:border-t-[7px] after:border-x-transparent after:border-t-[#242424]; }
 .notation-field select { @apply w-41 appearance-none pr-10 text-[#242424] disabled:opacity-100 max-[760px]:w-full; }
 .notation-field select option { @apply text-[#242424]; }
+.action-button { @apply relative; }
 .action-button, .page-footer button { @apply flex h-[45px] w-[45px] items-center justify-center rounded-[10px] border-[1.5px] p-0 text-[27px] leading-none font-bold hover:-translate-y-px hover:brightness-[.96] focus-visible:outline-2 focus-visible:outline-offset-2 cursor-pointer; }
 .action-button-img { @apply w-7 h-7}
 .ufal-button-img { @apply w-10 h-10 cursor-pointer }
@@ -191,8 +198,15 @@ input, select, .result-value { @apply box-border h-[45px] rounded-[10px] border-
 .result-row h2 { @apply whitespace-nowrap; }
 .result-value { @apply flex h-[31px] min-w-[192px] items-center text-[13px]; }
 .copy-button { @apply relative flex h-7 w-[25px] items-center justify-center border-0 bg-transparent p-0 text-[22px] hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 cursor-pointer; }
-.copy-tooltip { @apply absolute -bottom-[31px] -left-3 hidden whitespace-nowrap rounded px-[6px] py-1 font-sans text-[12px] font-black text-white; }
-.copy-button:hover .copy-tooltip, .copy-button:focus-visible .copy-tooltip { @apply block; }
+.tooltip, .footer-tooltip { @apply absolute hidden whitespace-nowrap rounded px-[6px] py-1 font-sans text-[12px] leading-normal font-black text-white; }
+.tooltip { @apply -bottom-[31px] -left-3; }
+.footer-tooltip { @apply bottom-full right-0 mb-[5px]; }
+.copy-button:hover .tooltip,
+.copy-button:focus-visible .tooltip,
+.action-button:hover .tooltip,
+.action-button:focus-visible .tooltip,
+.action-button:hover .footer-tooltip,
+.action-button:focus-visible .footer-tooltip { @apply block; }
 .page-footer { @apply absolute -right-px -bottom-px flex min-h-[72px] items-center gap-7 rounded-tl-[19px] rounded-br-[19px] border-[1.5px] border-r-0 border-b-0 py-0 pr-[27px] pl-4 max-[760px]:gap-2.5 max-[760px]:px-3; }
 .page-footer strong { @apply text-[36px] leading-none font-black; }
 .page-footer button { @apply w-[59px]; }

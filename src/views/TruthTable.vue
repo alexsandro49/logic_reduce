@@ -77,12 +77,15 @@ onMounted(async () => {
         <div class="control-actions" aria-label="Ações da tabela">
           <button type="button" class="action-button" :style="{backgroundColor: configStore.getColor('action-button')}" aria-label="Gerar tabela" @click="getTruthTable(simplificationStore.expression)">
             <PhCheckFat :size="32" :color="configStore.getColor('icon-color')" weight="fill" />
+            <span class="tooltip" :style="{backgroundColor: configStore.getColor('base')}">EXIBIR TABELA</span>
           </button>
           <button type="button" class="action-button" :style="{backgroundColor: configStore.getColor('action-button')}" aria-label="Limpar expressão" @click="resetTable">
             <PhTrash :size="32" :color="configStore.getColor('icon-color')" weight="fill" />
+            <span class="tooltip" :style="{backgroundColor: configStore.getColor('base')}">LIMPAR</span>
           </button>
           <button type="button" class="action-button" :style="{backgroundColor: configStore.getColor('action-button')}" aria-label="Restaurar valores" @click="getRandomTruthTable()">
             <PhArrowsClockwise :size="32" :color="configStore.getColor('icon-color')" weight="bold" />
+            <span class="tooltip" :style="{backgroundColor: configStore.getColor('base')}">ALEATÓRIO</span>
           </button>
         </div>
       </div>
@@ -121,7 +124,7 @@ input:focus-visible, select:focus-visible, button:focus-visible { @apply outline
 .display-control { @apply relative; }
 .display-control::after { @apply pointer-events-none absolute right-[10px] bottom-[17px] h-0 w-0 border-x-[5px] border-t-[9px] border-x-transparent border-t-[#222]; content: ''; }
 .display-control select { @apply w-[150px] appearance-none py-0 pr-6 pl-2 uppercase; }
-.action-button { @apply grid size-12 cursor-pointer place-items-center rounded-[11px] border-[1.5px] border-[#222]; }
+.action-button { @apply relative grid size-12 cursor-pointer place-items-center rounded-[11px] border-[1.5px] border-[#222]; }
 .action-button:hover { @apply -translate-y-px brightness-[.96]; }
 .truth-table-card { @apply mt-[13px] box-border min-h-[768px] min-w-0 flex-1 overflow-hidden rounded-[23px] border-[1.5px] px-[30px] pt-[28px] pb-[60px]; }
 .table-scroll { @apply overflow-x-auto; }
@@ -134,6 +137,14 @@ tbody tr:last-child td:first-child { @apply rounded-bl-[23px]; }
 tbody tr:last-child td:last-child { @apply rounded-br-[23px]; }
 th:first-child { @apply rounded-tl-[23px]; }
 th:last-child { @apply rounded-tr-[23px]; }
+.action-button:hover .tooltip,
+.action-button:focus-visible .tooltip {
+  @apply block;
+}
+.tooltip { 
+  @apply absolute hidden whitespace-nowrap rounded px-[6px] py-1 font-sans text-[12px] leading-normal 
+  font-black text-white -bottom-[31px] -left-3; 
+}
 
 @media (max-width: 760px) {
   .truth-table-workspace { @apply px-[14px] py-6; }

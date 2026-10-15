@@ -34,133 +34,95 @@ function buttonColorHelper(value: number) {
     </nav>
 
     <div class="header-actions">
-      <button v-if="configStore.darkTheme == true" @click="configStore.darkTheme = !configStore.darkTheme" class="icon-button hover:-translate-y-px hover:brightness-[.96]" :style="{backgroundColor: configStore.getColor('navigation-link')}" type="button" aria-label="Alternar tema">
-        <PhSun :size="28" :color="configStore.getColor('icon-color')" weight="fill" />
-      </button>
-      <button v-else class="icon-button hover:-translate-y-px hover:brightness-[.96]" @click="configStore.darkTheme = !configStore.darkTheme" :style="{backgroundColor: configStore.getColor('navigation-link')}" type="button" aria-label="Alternar tema">
-        <PhMoon :size="28" :color="configStore.getColor('icon-color')" weight="fill" />
+      <button @click="configStore.darkTheme = !configStore.darkTheme" class="icon-button hover:-translate-y-px hover:brightness-[.96]" :style="{backgroundColor: configStore.getColor('navigation-link')}" type="button" aria-label="Alternar tema">
+        <PhSun v-if="configStore.darkTheme == true" :size="28" :color="configStore.getColor('icon-color')" weight="fill" />
+        <PhMoon v-else :size="28" :color="configStore.getColor('icon-color')" weight="fill" />
+        <span class="tooltip" :style="{backgroundColor: configStore.getColor('base')}">ALTERNAR MODO</span>
       </button>
       <button class="icon-button hover:-translate-y-px hover:brightness-[.96]" @click="configStore.nextTheme()" :style="{backgroundColor: configStore.getColor('navigation-link')}" type="button" aria-label="Imprimir página">
         <PhPalette :size="28" :color="configStore.getColor('icon-color')" weight="fill" />
+        <span class="tooltip" :style="{backgroundColor: configStore.getColor('base')}">ALTERNAR TEMA</span>
       </button>
     </div>
   </header>
 </template>
 
 <style scoped>
+@reference "../assets/main.css";
+
 .app-header {
-  align-items: center;
-  border: 1.5px solid #222;
-  box-sizing: border-box;
-  display: flex;
-  gap: 14px;
-  min-height: 74px;
-  padding: 13px 14px 13px 18px;
-  width: 100%;
-  font-family: var(--font-roboto);
+  @apply flex box-border min-h-[74px] w-full items-center gap-[14px] border-[1.5px] border-solid border-[#222] py-[13px] pr-[14px] pl-[18px] font-roboto;
 }
 
 .brand {
-  align-items: center;
-  display: flex;
-  flex: 0 0 38px;
-  height: 38px;
-  justify-content: center;
-  overflow: hidden;
-  width: 38px;
+  @apply flex h-[38px] w-[38px] flex-[0_0_38px] items-center justify-center overflow-hidden;
 }
 
 .main-navigation {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 13px;
+  @apply flex flex-wrap items-center gap-[13px];
 }
 
 .navigation-link,
 .icon-button {
-  border: 1.5px solid #222;
-  font-family: var(--font-roboto);
-  font-size: 1.1em;
-  font-weight: 500;
+  @apply border-[1.5px] border-solid border-[#222] font-roboto text-[1.1em] font-medium;
 }
 
 .navigation-link {
-  align-items: center;
-  background: transparent;
-  border-radius: 11px;
-  display: flex;
-  min-height: 44px;
-  padding: 0 11px;
-  text-decoration: none;
-  text-transform: uppercase;
-  font-weight: 800;
-  white-space: nowrap;
+  @apply flex min-h-[44px] items-center rounded-[11px] bg-transparent px-[11px] py-0 font-extrabold whitespace-nowrap uppercase no-underline;
 }
 
 .navigation-link:hover,
 .navigation-link:focus-visible,
 .icon-button:hover,
 .icon-button:focus-visible {
-  cursor: pointer;
+  @apply cursor-pointer;
 }
 
 .header-actions {
-  display: flex;
-  gap: 13px;
-  margin-left: auto;
+  @apply ml-auto flex gap-[13px];
 }
 
 .icon-button {
-  align-items: center;
-  border-radius: 11px;
-  cursor: pointer;
-  display: flex;
-  height: 44px;
-  justify-content: center;
-  padding: 0;
-  width: 45px;
+  @apply flex relative h-[44px] w-[45px] cursor-pointer items-center justify-center rounded-[11px] p-0;
 }
 
 .icon-button img {
-  fill: #222;
-  height: 26px;
-  stroke: #222;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
-  width: 24px;
+  @apply h-[26px] w-[24px] fill-[#222] stroke-[#222] stroke-[1.8] [stroke-linecap:round] [stroke-linejoin:round];
+}
+
+.icon-button:hover .tooltip,
+.icon-button:focus-visible .tooltip {
+  @apply block;
+}
+
+.tooltip { 
+  @apply absolute hidden whitespace-nowrap rounded px-[6px] py-1 font-sans text-[12px] leading-normal 
+  font-black text-white -bottom-[31px] right-0; 
 }
 
 @media (max-width: 680px) {
   .app-header {
-    align-items: flex-start;
-    flex-wrap: wrap;
-    margin: 12px 10px 0;
-    padding: 12px;
-    width: calc(100% - 20px);
+    @apply mx-[10px] mt-[12px] w-[calc(100%_-_20px)] flex-wrap items-start p-[12px];
   }
 
   .main-navigation {
-    flex: 1 1 calc(100% - 56px);
-    gap: 8px;
+    @apply flex-[1_1_calc(100%_-_56px)] gap-[8px];
   }
 
   .navigation-link {
-    font-size: 14px;
-    min-height: 38px;
-    padding: 0 8px;
+    @apply min-h-[38px] px-[8px] py-0 text-[14px];
   }
 
   .header-actions {
-    margin-left: auto;
-    order: 3;
-    width: 100%;
+    @apply order-3 ml-auto w-full;
   }
 
   .icon-button {
-    height: 38px;
-    width: 40px;
+    @apply h-[38px] w-[40px];
+  }
+
+  .tooltip {
+    @apply right-auto left-0;
   }
 }
 </style>
