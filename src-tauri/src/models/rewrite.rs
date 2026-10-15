@@ -11,7 +11,10 @@ impl Rewrite {
         match e {
             expression::Expr::Not(a) => {
                 if let Some(r) = Self::rewrite_once(a) {
-                    return Some(Rewrite { e: expression::not(r.e), ..r });
+                    return Some(Rewrite {
+                        e: expression::not(r.e),
+                        ..r
+                    });
                 }
                 if let Some(v) = expression::constant(a) {
                     return Some(Rewrite {
@@ -32,9 +35,17 @@ impl Rewrite {
                 {
                     return Some(Rewrite {
                         e: if *op == operation::Op::And {
-                            expression::bin(expression::not((**x).clone()), operation::Op::Or, expression::not((**y).clone()))
+                            expression::bin(
+                                expression::not((**x).clone()),
+                                operation::Op::Or,
+                                expression::not((**y).clone()),
+                            )
                         } else {
-                            expression::bin(expression::not((**x).clone()), operation::Op::And, expression::not((**y).clone()))
+                            expression::bin(
+                                expression::not((**x).clone()),
+                                operation::Op::And,
+                                expression::not((**y).clone()),
+                            )
                         },
                         law: law::Law::DeMorgan,
                         explanation: law::Law::DeMorgan.label(),
@@ -81,7 +92,11 @@ impl Rewrite {
                         }
                     }
 
-                    let opposite = if and { operation::Op::Or } else { operation::Op::And };
+                    let opposite = if and {
+                        operation::Op::Or
+                    } else {
+                        operation::Op::And
+                    };
                     for (compound_index, compound) in ts.iter().enumerate() {
                         if operation::op_of(compound) != Some(opposite) {
                             continue;
@@ -143,9 +158,20 @@ impl Rewrite {
                             explanation: law::Law::Complement.label(),
                         });
                     }
-                    let nested = if operation::op_of(a) == Some(if and { operation::Op::Or } else { operation::Op::And }) {
+                    let nested = if operation::op_of(a)
+                        == Some(if and {
+                            operation::Op::Or
+                        } else {
+                            operation::Op::And
+                        }) {
                         Some((a.as_ref(), b.as_ref()))
-                    } else if operation::op_of(b) == Some(if and { operation::Op::Or } else { operation::Op::And }) {
+                    } else if operation::op_of(b)
+                        == Some(if and {
+                            operation::Op::Or
+                        } else {
+                            operation::Op::And
+                        })
+                    {
                         Some((b.as_ref(), a.as_ref()))
                     } else {
                         None
@@ -161,8 +187,14 @@ impl Rewrite {
                         });
                     }
                     if operation::op_of(a) == operation::op_of(b)
-                        && operation::op_of(a) == Some(if and { operation::Op::Or } else { operation::Op::And })
-                        && let (Some((x, y)), Some((u, v))) = (expression::children(a), expression::children(b))
+                        && operation::op_of(a)
+                            == Some(if and {
+                                operation::Op::Or
+                            } else {
+                                operation::Op::And
+                            })
+                        && let (Some((x, y)), Some((u, v))) =
+                            (expression::children(a), expression::children(b))
                     {
                         let c = if expression::same(x, u) {
                             Some((x, y, v))
@@ -178,9 +210,17 @@ impl Rewrite {
                         if let Some((common, l, r)) = c {
                             return Some(Rewrite {
                                 e: if and {
-                                    expression::bin(common.clone(), operation::Op::Or, expression::bin(l.clone(), operation::Op::And, r.clone()))
+                                    expression::bin(
+                                        common.clone(),
+                                        operation::Op::Or,
+                                        expression::bin(l.clone(), operation::Op::And, r.clone()),
+                                    )
                                 } else {
-                                    expression::bin(common.clone(), operation::Op::And, expression::bin(l.clone(), operation::Op::Or, r.clone()))
+                                    expression::bin(
+                                        common.clone(),
+                                        operation::Op::And,
+                                        expression::bin(l.clone(), operation::Op::Or, r.clone()),
+                                    )
                                 },
                                 law: law::Law::Distributivity,
                                 explanation: law::Law::Distributivity.label(),
@@ -202,7 +242,7 @@ impl Rewrite {
                         explanation: law::Law::Associativity.label(),
                     });
                 }
-                
+
                 if operation::op_of(a) != Some(*op)
                     && operation::op_of(b) != Some(*op)
                     && expression::ordering_key(a) > expression::ordering_key(b)

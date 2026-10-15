@@ -68,7 +68,14 @@ impl Parser {
     fn parse_and(&mut self) -> Result<expression::Expr, String> {
         let mut r = self.parse_unary()?;
         loop {
-            if self.take('.') || self.take('*') || self.take('·') || self.take('∧') || self.take_text("&&") || self.take('&') || self.starts_unary() {
+            if self.take('.')
+                || self.take('*')
+                || self.take('·')
+                || self.take('∧')
+                || self.take_text("&&")
+                || self.take('&')
+                || self.starts_unary()
+            {
                 r = expression::bin(r, operation::Op::And, self.parse_unary()?);
             } else {
                 return Ok(r);

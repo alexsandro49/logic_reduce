@@ -80,8 +80,15 @@ mod tests {
         let expression = Parser::parse("(A & ~C) + (B + ~C)").unwrap();
         let (simplified, steps) = simplify(expression);
 
-        assert_eq!(format(&simplified, None, false, Notation::Default), "B + ~C");
-        assert!(steps.iter().any(|(_, _, law, _)| matches!(law, crate::models::law::Law::Absorption)));
+        assert_eq!(
+            format(&simplified, None, false, Notation::Default),
+            "B + ~C"
+        );
+        assert!(
+            steps
+                .iter()
+                .any(|(_, _, law, _)| matches!(law, crate::models::law::Law::Absorption))
+        );
     }
 
     #[test]
@@ -90,7 +97,11 @@ mod tests {
         let (simplified, steps) = simplify(expression);
 
         assert_eq!(format(&simplified, None, false, Notation::Default), "A + B");
-        assert!(steps.iter().any(|(_, _, law, _)| matches!(law, crate::models::law::Law::Commutativity)));
+        assert!(
+            steps
+                .iter()
+                .any(|(_, _, law, _)| matches!(law, crate::models::law::Law::Commutativity))
+        );
     }
 
     #[test]
@@ -98,6 +109,10 @@ mod tests {
         let expression = Parser::parse("A + (B + C)").unwrap();
         let (_, steps) = simplify(expression);
 
-        assert!(steps.iter().any(|(_, _, law, _)| matches!(law, crate::models::law::Law::Associativity)));
+        assert!(
+            steps
+                .iter()
+                .any(|(_, _, law, _)| matches!(law, crate::models::law::Law::Associativity))
+        );
     }
 }

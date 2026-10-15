@@ -11,6 +11,7 @@ import { generateRandomExpression } from '../utils/expressionGenerator.ts';
 import { stepStruct } from '../utils/types.ts';
 import { PhArrowsClockwise, PhBook, PhCheckFat, PhCopySimple, PhGithubLogo, PhTrash } from '@phosphor-icons/vue';
 import { useSimplificationStore } from '../stores/simplification.ts';
+import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 
 const configStore = useConfigStore();
 const simplificationStore = useSimplificationStore();
@@ -19,6 +20,7 @@ const result = ref('');
 const submittedExpression = ref('');
 const error = ref('');
 const isSimplifying = ref(false);
+const copyButtonTittle = ref('COPIAR');
 
 const notations = [
   { text:"PADRÃO", value: "default"},
@@ -78,6 +80,14 @@ function footerColorHelper(): string {
   const value = configStore.darkTheme ? "board" : "icon-color"
   return configStore.getColor(value);
 }
+
+async function copyResult() {
+  await writeText(result.value);
+  copyButtonTittle.value = 'COPIADO!';
+  setTimeout(() => {
+    copyButtonTittle.value = 'COPIAR';
+  }, 1000);
+}
 </script>
 
 <template>
@@ -128,8 +138,9 @@ function footerColorHelper(): string {
       <section class="result-row" aria-label="Resultado simplificado">
         <h2 class="font-text" :style="{color: configStore.getColor('text')}">Forma simplificada:</h2>
         <output class="result-value" :style="{backgroundColor: configStore.getColor('board')}">{{ result }}</output>
-        <button class="copy-button" type="button" aria-label="Alternar tema">
+        <button class="copy-button" type="button" aria-label="Alternar tema" @click="copyResult" :disabled="result === ''">
           <PhCopySimple :size="32" :color="configStore.getColor('text')" weight="fill" />
+          <span class="copy-tooltip" :style="{backgroundColor: configStore.getColor('base')}">{{ copyButtonTittle }}</span>
         </button>
       </section>
     </section>
@@ -180,7 +191,7 @@ input, select, .result-value { @apply box-border h-[45px] rounded-[10px] border-
 .result-row h2 { @apply whitespace-nowrap; }
 .result-value { @apply flex h-[31px] min-w-[192px] items-center text-[13px]; }
 .copy-button { @apply relative flex h-7 w-[25px] items-center justify-center border-0 bg-transparent p-0 text-[22px] hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 cursor-pointer; }
-.copy-tooltip { @apply absolute -bottom-[31px] -left-3 hidden whitespace-nowrap rounded bg-[#242424] px-[6px] py-1 font-sans text-[12px] text-white; }
+.copy-tooltip { @apply absolute -bottom-[31px] -left-3 hidden whitespace-nowrap rounded px-[6px] py-1 font-sans text-[12px] font-black text-white; }
 .copy-button:hover .copy-tooltip, .copy-button:focus-visible .copy-tooltip { @apply block; }
 .page-footer { @apply absolute -right-px -bottom-px flex min-h-[72px] items-center gap-7 rounded-tl-[19px] rounded-br-[19px] border-[1.5px] border-r-0 border-b-0 py-0 pr-[27px] pl-4 max-[760px]:gap-2.5 max-[760px]:px-3; }
 .page-footer strong { @apply text-[36px] leading-none font-black; }
