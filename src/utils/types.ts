@@ -3,7 +3,8 @@ export interface stepStruct {
   after_rule: string
 };
 
-export type Rule = { name: string; description: string; examples: string[]; notes: string[] };
+export type Rule = { name: string; description: string; examples: string[]; 
+                                                                      notes: string[] };
 
 export type Color = { color: string, tags: string[] };
 

@@ -7,9 +7,12 @@ export const useSimplificationStore = defineStore(
     const expression = ref('');
     const placeholder = '~((~A + B) & (~B + C))';
 
+    const isSimplifying = ref(false);
+
     return {
       expression,
-      placeholder
+      placeholder,
+      isSimplifying
     };
   }
 );

@@ -3,16 +3,17 @@ import { onMounted, Ref, ref } from 'vue';
 import HeaderComponent from '../components/HeaderComponent.vue';
 import { useConfigStore } from '../stores/config.ts';
 import { TruthTable, TruthTableRows } from '../utils/types.ts';
-import { PhArrowsClockwise, PhCheckFat, PhTrash } from '@phosphor-icons/vue';
 import { invoke } from '@tauri-apps/api/core';
 import { generateRandomExpression } from '../utils/expressionGenerator.ts';
 import { useSimplificationStore } from '../stores/simplification.ts';
+import ActionControls from '../components/ActionControls.vue';
 
 const configStore = useConfigStore();
 const simplificationStore = useSimplificationStore();
 
 const display = ref('complete');
-const displayOptions = [{ label: 'Completa', value: 'complete' }, { label: 'Reduzida', value: 'reduced' }];
+const displayOptions = [{ label: 'Completa', value: 'complete' }, 
+  { label: 'Reduzida', value: 'reduced' }];
 const columns: Ref<string[]> = ref([]);
 const rows: Ref<TruthTableRows[]> = ref([]);
 
@@ -67,7 +68,8 @@ onMounted(async () => {
     <HeaderComponent :active-window-button="1" />
     <section
       class="truth-table-workspace"
-      :style="{backgroundColor: configStore.darkTheme ? configStore.getColor('background') : '#FFFFFF'}"
+      :style="{backgroundColor: configStore.darkTheme ? 
+        configStore.getColor('background') : '#FFFFFF'}"
       aria-label="Tabela verdade"
     >
       <div class="table-controls">
@@ -99,57 +101,19 @@ onMounted(async () => {
           class="control-actions"
           aria-label="Ações da tabela"
         >
-          <button
-            type="button"
-            class="action-button"
-            :style="{backgroundColor: configStore.getColor('action-button')}"
-            aria-label="Gerar tabela"
-            @click="getTruthTable(simplificationStore.expression)"
-          >
-            <PhCheckFat
-              :size="32"
-              :color="configStore.getColor('icon-color')"
-              weight="fill"
-            />
-            <span
-              class="tooltip"
-              :style="{backgroundColor: configStore.getColor('base')}"
-            >EXIBIR TABELA</span>
-          </button>
-          <button
-            type="button"
-            class="action-button"
-            :style="{backgroundColor: configStore.getColor('action-button')}"
-            aria-label="Limpar expressão"
-            @click="resetTable"
-          >
-            <PhTrash
-              :size="32"
-              :color="configStore.getColor('icon-color')"
-              weight="fill"
-            />
-            <span
-              class="tooltip"
-              :style="{backgroundColor: configStore.getColor('base')}"
-            >LIMPAR</span>
-          </button>
-          <button
-            type="button"
-            class="action-button"
-            :style="{backgroundColor: configStore.getColor('action-button')}"
-            aria-label="Restaurar valores"
-            @click="getRandomTruthTable()"
-          >
-            <PhArrowsClockwise
-              :size="32"
-              :color="configStore.getColor('icon-color')"
-              weight="bold"
-            />
-            <span
-              class="tooltip"
-              :style="{backgroundColor: configStore.getColor('base')}"
-            >ALEATÓRIO</span>
-          </button>
+          <ActionControls
+            @check-button="getTruthTable(simplificationStore.expression)"
+            @trash-button="resetTable"
+            @refresh-button="getRandomTruthTable()"
+
+            check-button-label="Gerar tabela"
+            trash-button-label="Limpar expressão"
+            refresh-button-label="Expressão aleatória"
+            
+            check-button-tooltip="EXIBIR TABELA"
+            trash-button-tooltip="LIMPAR"
+            refresh-button-tooltip="ALEATÓRIO"
+          />
         </div>
       </div>
       <section
@@ -160,7 +124,10 @@ onMounted(async () => {
         <div class="table-scroll">
           <table>
             <thead>
-              <tr :style="{backgroundColor: configStore.getColor('header-table'), color: configStore.getColor('board')}">
+              <tr
+                :style="{backgroundColor: configStore.getColor('header-table'), 
+                         color: configStore.getColor('board')}"
+              >
                 <th
                   v-for="(column, columnIndex) in columns"
                   :key="columnIndex"
@@ -174,7 +141,10 @@ onMounted(async () => {
               <tr
                 v-for="(row, index) in rows"
                 :key="`${row}`"
-                :style="{backgroundColor: tableColorHelper(index, 'hightlighted-cell', 'transparent'), color: tableColorHelper(index, 'light-cell-text', 'dark-cell-text')}"
+                :style="{ 
+                  backgroundColor: 
+                    tableColorHelper(index, 'hightlighted-cell', 'transparent'), 
+                  color: tableColorHelper(index, 'light-cell-text', 'dark-cell-text')}"
               >
                 <td
                   v-for="(value, columnIndex) in row"
