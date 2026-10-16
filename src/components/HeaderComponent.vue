@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
-import { useConfigStore } from '../stores/config'
-import {PhCircuitry, PhMoon, PhPalette, PhSun} from '@phosphor-icons/vue'
+import { useRouter } from 'vue-router';
+import { useConfigStore } from '../stores/config';
+import {PhCircuitry, PhMoon, PhPalette, PhSun} from '@phosphor-icons/vue';
 
 const props = defineProps<{
   activeWindowButton: number;
 }>();
 
 const windowButtons = [
-  {name: "simplificação", route: ""},
-  {name: "tabela verdade", route: "truth-table"},
-  {name: "manual", route: "manual"}
+  {name: 'simplificação', route: ''},
+  {name: 'tabela verdade', route: 'truth-table'},
+  {name: 'manual', route: 'manual'}
 ];
 
 const configStore = useConfigStore();
@@ -24,24 +24,76 @@ function buttonColorHelper(value: number) {
 </script>
 
 <template>
-  <header class="app-header" :style="{backgroundColor: configStore.getColor('base')}">
-    <a class="brand" href="#" aria-label="Logic Reduce">
-      <PhCircuitry :size="44" class="text-white" weight="fill" />
+  <header
+    class="app-header"
+    :style="{backgroundColor: configStore.getColor('base')}"
+  >
+    <a
+      class="brand"
+      href="#"
+      aria-label="Logic Reduce"
+    >
+      <PhCircuitry
+        :size="44"
+        class="text-white"
+        weight="fill"
+      />
     </a>
 
-    <nav v-for="(link, index) in windowButtons" v-key="index" class="main-navigation" aria-label="Navegação principal">
-      <a :style="{backgroundColor: buttonColorHelper(index)}" class="navigation-link hover:-translate-y-px hover:brightness-[.96]" @click="router.push(`/${link.route}`)">{{ link.name }}</a>
+    <nav
+      v-for="(link, index) in windowButtons"
+      :key="index"
+      class="main-navigation"
+      aria-label="Navegação principal"
+    >
+      <a
+        :style="{backgroundColor: buttonColorHelper(index)}"
+        class="navigation-link hover:-translate-y-px hover:brightness-[.96]"
+        @click="router.push(`/${link.route}`)"
+      >{{ link.name }}</a>
     </nav>
 
     <div class="header-actions">
-      <button @click="configStore.darkTheme = !configStore.darkTheme" class="icon-button hover:-translate-y-px hover:brightness-[.96]" :style="{backgroundColor: configStore.getColor('navigation-link')}" type="button" aria-label="Alternar tema">
-        <PhSun v-if="configStore.darkTheme == true" :size="28" :color="configStore.getColor('icon-color')" weight="fill" />
-        <PhMoon v-else :size="28" :color="configStore.getColor('icon-color')" weight="fill" />
-        <span class="tooltip" :style="{backgroundColor: configStore.getColor('base')}">ALTERNAR MODO</span>
+      <button
+        @click="configStore.darkTheme = !configStore.darkTheme"
+        class="icon-button hover:-translate-y-px hover:brightness-[.96]"
+        :style="{backgroundColor: configStore.getColor('navigation-link')}"
+        type="button"
+        aria-label="Alternar tema"
+      >
+        <PhSun
+          v-if="configStore.darkTheme == true"
+          :size="28"
+          :color="configStore.getColor('icon-color')"
+          weight="fill"
+        />
+        <PhMoon
+          v-else
+          :size="28"
+          :color="configStore.getColor('icon-color')"
+          weight="fill"
+        />
+        <span
+          class="tooltip"
+          :style="{backgroundColor: configStore.getColor('base')}"
+        >ALTERNAR MODO</span>
       </button>
-      <button class="icon-button hover:-translate-y-px hover:brightness-[.96]" @click="configStore.nextTheme()" :style="{backgroundColor: configStore.getColor('navigation-link')}" type="button" aria-label="Imprimir página">
-        <PhPalette :size="28" :color="configStore.getColor('icon-color')" weight="fill" />
-        <span class="tooltip" :style="{backgroundColor: configStore.getColor('base')}">ALTERNAR TEMA</span>
+      <button
+        class="icon-button hover:-translate-y-px hover:brightness-[.96]"
+        @click="configStore.nextTheme()"
+        :style="{backgroundColor: configStore.getColor('navigation-link')}"
+        type="button"
+        aria-label="Imprimir página"
+      >
+        <PhPalette
+          :size="28"
+          :color="configStore.getColor('icon-color')"
+          weight="fill"
+        />
+        <span
+          class="tooltip"
+          :style="{backgroundColor: configStore.getColor('base')}"
+        >ALTERNAR TEMA</span>
       </button>
     </div>
   </header>

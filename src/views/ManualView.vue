@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref } from 'vue';
 import { openUrl } from '@tauri-apps/plugin-opener';
-import HeaderComponent from '@/components/Header.vue'
+import HeaderComponent from '@/components/HeaderComponent.vue';
 import { useConfigStore } from '../stores/config';
 import { Rule } from '../utils/types';
 
@@ -18,9 +18,9 @@ const rules: Rule[] = [
   { name: 'Distributiva', description: 'Permite distribuir uma operação sobre outra para reorganizar ou simplificar a expressão.', examples: ['A & (B + C) ⇒ (A & B) + (A & C)'], notes: ['Permite distribuir uma operação sobre outra para reorganizar ou simplificar a expressão.'] },
   { name: 'Absorção', description: 'Um termo mais simples pode absorver outro termo que já depende dele.', examples: ['A + (A & B) ⇒ A', 'A & (A + B) ⇒ A'], notes: ['A variável comum determina o resultado.', 'Remove termos redundantes que não influenciam o resultado final.'] },
   { name: 'De Morgan', description: 'Ao negar uma expressão, troca o operador e nega cada termo.', examples: ['~(A + B) ⇒ ~A & ~B', '~(A & B) ⇒ ~A + ~B'], notes: ['A lei ajuda a mover negações para dentro de parênteses.'] },
-]
-const selectedName = ref('Identidade')
-const selectedRule = computed(() => rules.find((rule) => rule.name === selectedName.value) ?? rules[0])
+];
+const selectedName = ref('Identidade');
+const selectedRule = computed(() => rules.find((rule) => rule.name === selectedName.value) ?? rules[0]);
 
 async function openExternalLink(event: MouseEvent, url: string) {
   event.preventDefault();
@@ -28,36 +28,97 @@ async function openExternalLink(event: MouseEvent, url: string) {
 };
 
 function sidebarColorHelper(rule: Rule) {
-  const value = (selectedName.value === rule.name) ? 'action-button' : 'transparent'
-  return configStore.getColor(value)
+  const value = (selectedName.value === rule.name) ? 'action-button' : 'transparent';
+  return configStore.getColor(value);
 }
 </script>
 
 <template>
-  <main class="manual-page" :class="{dark: configStore.darkTheme}">
+  <main
+    class="manual-page"
+    :class="{dark: configStore.darkTheme}"
+  >
     <HeaderComponent :active-window-button="2" />
-    <div class="manual-layout" :style="{backgroundColor: configStore.darkTheme ? configStore.getColor('background') : '#FFFFFF'}">
-      <aside class="sidebar" :style="{backgroundColor: configStore.getColor('board')}" aria-label="Regras da álgebra booleana">
-        <h1 :style="{color: configStore.getColor('input-text')}">Propriedades</h1>
+    <div
+      class="manual-layout"
+      :style="{backgroundColor: configStore.darkTheme ? configStore.getColor('background') : '#FFFFFF'}"
+    >
+      <aside
+        class="sidebar"
+        :style="{backgroundColor: configStore.getColor('board')}"
+        aria-label="Regras da álgebra booleana"
+      >
+        <h1 :style="{color: configStore.getColor('input-text')}">
+          Propriedades
+        </h1>
         <nav>
-          <button v-for="rule in rules" :key="rule.name" class="rule-link" :style="{ backgroundColor: sidebarColorHelper(rule) }" :aria-current="selectedName === rule.name ? 'page' : undefined" @click="selectedName = rule.name">{{ rule.name }}</button>
+          <button
+            v-for="rule in rules"
+            :key="rule.name"
+            class="rule-link"
+            :style="{ backgroundColor: sidebarColorHelper(rule) }"
+            :aria-current="selectedName === rule.name ? 'page' : undefined"
+            @click="selectedName = rule.name"
+          >
+            {{ rule.name }}
+          </button>
         </nav>
         <div class="topic">
           <span :style="{color: configStore.getColor('input-text')}">Sobre o tema:</span>
-          <a :style="{color: configStore.getColor('board'), backgroundColor: configStore.getColor('base')}" href="https://pt.wikipedia.org/wiki/%C3%81lgebra_booleana" @click="openExternalLink($event, 'https://pt.wikipedia.org/wiki/%C3%81lgebra_booleana')">Álgebra Booleana</a>
+          <a
+            :style="{color: configStore.getColor('board'), backgroundColor: configStore.getColor('base')}"
+            href="https://pt.wikipedia.org/wiki/%C3%81lgebra_booleana"
+            @click="openExternalLink($event, 'https://pt.wikipedia.org/wiki/%C3%81lgebra_booleana')"
+          >Álgebra Booleana</a>
         </div>
       </aside>
 
       <article class="content">
-        <h2 class="colored-text" :style="{color: configStore.getColor('text')}">{{ selectedRule.name === 'D. Negação' ? 'Dupla Negação' : selectedRule.name }}</h2>
-        <p class="description" :style="{color: configStore.getColor('text')}">{{ selectedRule.description }}</p>
-        <h3 class="example-heading" :style="{color: configStore.getColor('text')}">EXEMPLO:</h3>
-        <section class="example-card" :style="{backgroundColor: configStore.getColor('board')}" :aria-label="`Exemplos de ${selectedRule.name}`">
-          <p v-for="example in selectedRule.examples" :key="example">{{ example }}</p>
+        <h2
+          class="colored-text"
+          :style="{color: configStore.getColor('text')}"
+        >
+          {{ selectedRule.name === 'D. Negação' ? 'Dupla Negação' : selectedRule.name }}
+        </h2>
+        <p
+          class="description"
+          :style="{color: configStore.getColor('text')}"
+        >
+          {{ selectedRule.description }}
+        </p>
+        <h3
+          class="example-heading"
+          :style="{color: configStore.getColor('text')}"
+        >
+          EXEMPLO:
+        </h3>
+        <section
+          class="example-card"
+          :style="{backgroundColor: configStore.getColor('board')}"
+          :aria-label="`Exemplos de ${selectedRule.name}`"
+        >
+          <p
+            v-for="example in selectedRule.examples"
+            :key="example"
+          >
+            {{ example }}
+          </p>
         </section>
-        <section class="notes" :style="{color: configStore.getColor('text')}"><h3 class="colored-text">Observações:</h3>
+        <section
+          class="notes"
+          :style="{color: configStore.getColor('text')}"
+        >
+          <h3 class="colored-text">
+            Observações:
+          </h3>
           <ul>
-            <li v-for="note in selectedRule.notes" :key="note" :style="{color: configStore.getColor('text')}">{{ note }}</li>
+            <li
+              v-for="note in selectedRule.notes"
+              :key="note"
+              :style="{color: configStore.getColor('text')}"
+            >
+              {{ note }}
+            </li>
           </ul>
         </section>
       </article>

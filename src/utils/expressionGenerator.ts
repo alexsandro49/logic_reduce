@@ -1,5 +1,3 @@
-import { Ref } from "vue";
-
 const variables = ['A', 'B', 'C', 'D'];
 const binaryOperators = ['&', '+', '^'];
 
@@ -32,5 +30,5 @@ export function generateRandomExpression(expression: string) {
 
   expression = `(${left} ${operator} ${right})`;
 
-  return expression
+  return expression;
 }

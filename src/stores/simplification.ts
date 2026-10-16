@@ -1,8 +1,8 @@
-import { defineStore } from "pinia";
-import { ref } from "vue";
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
 
 export const useSimplificationStore = defineStore(
-  "simplification",
+  'simplification',
   () => {
     const expression = ref('');
     const placeholder = '~((~A + B) & (~B + C))';
