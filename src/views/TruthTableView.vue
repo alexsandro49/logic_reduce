@@ -6,7 +6,7 @@ import { TruthTable, TruthTableRows } from '../utils/types.ts';
 import { invoke } from '@tauri-apps/api/core';
 import { generateRandomExpression } from '../utils/expressionGenerator.ts';
 import { useSimplificationStore } from '../stores/simplification.ts';
-import ActionControls from '../components/ActionControls.vue';
+import ActionButtons from '../components/ActionButtons.vue';
 
 const configStore = useConfigStore();
 const simplificationStore = useSimplificationStore();
@@ -101,7 +101,7 @@ onMounted(async () => {
           class="control-actions"
           aria-label="Ações da tabela"
         >
-          <ActionControls
+          <ActionButtons
             @check-button="getTruthTable(simplificationStore.expression)"
             @trash-button="resetTable"
             @refresh-button="getRandomTruthTable()"

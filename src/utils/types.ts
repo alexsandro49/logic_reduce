@@ -5,7 +5,6 @@ export interface stepStruct {
 
 export type Rule = { name: string; description: string; examples: string[]; 
                                                                       notes: string[] };
-
 export type Color = { color: string, tags: string[] };
 
 export type TruthTableRows = number[];
@@ -21,3 +20,5 @@ export type TruthTable = {
     rows: TruthTableRow[],
     total_rows: number,
 }
+
+export type ReductionStep = { value: string; rule: string }
