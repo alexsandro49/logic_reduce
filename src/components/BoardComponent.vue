@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { PhCircle, PhSquare } from '@phosphor-icons/vue';
 import { useConfigStore } from '../stores/config';
 import { useSimplificationStore } from '../stores/simplification';
 
@@ -21,27 +20,21 @@ const rules = [
 </script>
 
 <template>
-    <div class="steps-card" :style="{ backgroundColor: configStore.getColor('board') }">
+    <div class="steps-card py-10" :style="{ backgroundColor: configStore.getColor('board') }">
         <article v-for="(step, index) in simplificationStore.steps" :key="step.value"
-            class="step flex w-full justify-between">
-            <div class="flex gap-1 items-center" @click="simplificationStore.removeStep(index)">
-                <span>
-                    <PhSquare :size="32" :color="[configStore.getColor('base'), '#ffffff'][index % 2]" weight="fill" class="inline" />
-                </span>
-                <h2>{{ index + 1 }}. <span>{{ step.value }}</span></h2>
+            class="step flex w-full justify-between h-12 mb-5">
+            <div class="flex items-center gap-4" @click="simplificationStore.removeStep(index)">
+                <h2>{{ index + 1 }}.</h2>
+                <h2>{{ step.value }}</h2>
             </div>
 
-            <div class="flex items-center gap-1">
+            <div class="flex items-center">
                 <select v-model="step.rule" :style="{ backgroundColor: configStore.getColor('input') }"
                     aria-label="Notação">
                     <option v-for="notationOption in rules" :value="notationOption.value" :key="notationOption.value">
                         {{ notationOption.text }}
                     </option>
                 </select>
-
-                <span>
-                    <PhSquare :size="32" :color="[configStore.getColor('base'), '#ffffff'][index % 2]" weight="fill" class="inline" />
-                </span>
             </div>
         </article>
     </div>
@@ -134,15 +127,12 @@ select,
 }
 
 .steps-card {
-    @apply mt-[7px] min-h-0 flex-1 overflow-x-hidden overflow-y-auto box-border rounded-[23px] border-[1.5px] border-[#242424] px-8 py-[27px] max-[760px]:px-[18px] max-[760px]:py-[23px];
+    @apply min-h-0 flex-1 overflow-x-hidden overflow-y-auto box-border rounded-[23px] border-[1.5px] border-[#242424] px-8 max-[760px]:px-[18px] max-[760px]:py-[23px];
 }
 
-.step+.step {
-    @apply mt-8;
-}
 
 .step h2 {
-    @apply mb-[6px] text-4xl leading-[1.25] max-[760px]:text-[22px];
+    @apply text-4xl leading-[1.25] max-[760px]:text-[22px];
 }
 
 .step-expression,

@@ -5,11 +5,12 @@ import ufalIcon from '@/assets/ufal-logo.svg';
 import { ref } from 'vue';
 import { useConfigStore } from '../stores/config.ts';
 // import { generateRandomExpression } from '../utils/expressionGenerator.ts';
-import { PhBook, PhCopySimple, PhGithubLogo, PhPlus } from '@phosphor-icons/vue';
+import { PhBook, PhCopySimple, PhGithubLogo, PhPlus, PhSquare } from '@phosphor-icons/vue';
 import { useSimplificationStore } from '../stores/simplification.ts';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import ActionButtons from '../components/ActionButtons.vue';
 import BoardComponent from '../components/BoardComponent.vue';
+import SidePanel from '../components/SidePanel.vue';
 
 const configStore = useConfigStore();
 const simplificationStore = useSimplificationStore();
@@ -35,7 +36,7 @@ async function copyResult() {
 <template>
   <main class="page-shell" :class="{ dark: configStore.darkTheme }">
     <HeaderComponent :active-window-button="0" />
-    <section class="workspace px-7" :style="{
+    <section class="workspace" :style="{
       backgroundColor: configStore.darkTheme ?
         configStore.getColor('background') : '#FFFFFF'
     }" aria-label="Simplificação de expressão booleana">
@@ -49,24 +50,28 @@ async function copyResult() {
           }" type="text" aria-label="Expressão booleana">
         </label>
         <div class="notation-control">
-          <button class="action-button" :style="{ backgroundColor: configStore.getColor('action-button') }" type="button"
-            @click="simplificationStore.addStep" aria-label="Adicionar passo">
+          <button class="action-button" :style="{ backgroundColor: configStore.getColor('action-button') }"
+            type="button" @click="simplificationStore.addStep" aria-label="Adicionar passo">
             <PhPlus :size="32" :color="configStore.getColor('icon-color')" weight="bold" />
             <span class="tooltip" :style="{ backgroundColor: configStore.getColor('base') }">ADICIONAR</span>
           </button>
 
-          <ActionButtons 
-            @trash-button="simplificationStore.clearData" @refresh-button="simplificationStore.randomExpressionHelper"
-            check-button-label="Simplificar expressão" trash-button-label="Limpar expressão"
-            refresh-button-label="Expressão aleatória" check-button-tooltip="SIMPLIFICAR" trash-button-tooltip="LIMPAR"
-            refresh-button-tooltip="ALEATÓRIO" />
+          <ActionButtons @trash-button="simplificationStore.clearData"
+            @refresh-button="simplificationStore.randomExpressionHelper" check-button-label="Simplificar expressão"
+            trash-button-label="Limpar expressão" refresh-button-label="Expressão aleatória"
+            check-button-tooltip="SIMPLIFICAR" trash-button-tooltip="LIMPAR" refresh-button-tooltip="ALEATÓRIO" />
         </div>
       </div>
       <section class="steps-section" aria-labelledby="steps-title">
         <h1 id="steps-title" class="font-text" :style="{ color: configStore.getColor('text') }">
           Passos:
         </h1>
-        <BoardComponent />
+
+        <div class="flex w-full h-full hide-scrollbar">
+          <SidePanel />
+          <BoardComponent />
+          <SidePanel />
+        </div>
         <p v-if="error" role="alert">
           {{ error }}
         </p>
@@ -123,7 +128,7 @@ async function copyResult() {
 }
 
 .workspace {
-  @apply flex min-h-0 flex-1 flex-col pt-[43px] pb-[97px] max-[760px]:pt-7;
+  @apply flex px-8 min-h-0 flex-1 flex-col pt-[43px] pb-[97px] max-[760px]:pt-7;
 }
 
 .controls-row {
@@ -189,14 +194,6 @@ select,
 
 .steps-section {
   @apply mt-7 flex min-h-0 flex-1 flex-col;
-}
-
-.steps-card {
-  @apply mt-[7px] min-h-0 flex-1 overflow-x-hidden overflow-y-auto box-border rounded-[23px] border-[1.5px] border-[#242424] px-8 py-[27px] max-[760px]:px-[18px] max-[760px]:py-[23px];
-}
-
-.step+.step {
-  @apply mt-8;
 }
 
 .step h2 {
@@ -268,5 +265,17 @@ select,
 
 input::placeholder {
   color: var(--placeholder-color);
+}
+
+.hide-scrollbar {
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE 10+ */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, Opera */
 }
 </style>
