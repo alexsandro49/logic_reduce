@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { PhPlus, PhX } from '@phosphor-icons/vue';
 import { useConfigStore } from '../stores/config';
 import { useSimplificationStore } from '../stores/simplification';
 
@@ -20,16 +21,22 @@ const rules = [
 </script>
 
 <template>
-    <div class="steps-card py-10" :style="{ backgroundColor: configStore.getColor('board') }">
+    <div class="steps-card py-3" :style="{ backgroundColor: configStore.getColor('board') }">
         <article v-for="(step, index) in simplificationStore.steps" :key="step.value"
-            class="step flex w-full justify-between h-12 mb-5">
-            <div class="flex items-center gap-4" @click="simplificationStore.removeStep(index)">
+            class="step flex w-full justify-between h-12 mb-5 hover:bg-(--cor-hover) hover:text-white group"
+            :style="{'--cor-hover': configStore.getColor('base')}">
+            <div class="flex items-center gap-4">
                 <h2>{{ index + 1 }}.</h2>
-                <h2>{{ step.value }}</h2>
+                <input :value="step.value" :style="{'--input-hover': configStore.getColor('board')}" class="group-hover:bg-(--input-hover)" />
             </div>
 
-            <div class="flex items-center">
-                <select v-model="step.rule" :style="{ backgroundColor: configStore.getColor('input') }"
+            <div class="flex items-center gap-3">
+                <button class="action-button" :style="{ backgroundColor: configStore.getColor('action-button') }"
+                    type="button" @click="simplificationStore.removeStep(index)" aria-label="Adicionar passo">
+                    <PhX :size="32" :color="configStore.getColor('icon-color')" weight="bold" />
+                    <span class="tooltip" :style="{ backgroundColor: configStore.getColor('base') }">REMOVER</span>
+                </button>
+                <select v-model="step.rule" :style="{ backgroundColor: configStore.getColor('base') }"
                     aria-label="Notação">
                     <option v-for="notationOption in rules" :value="notationOption.value" :key="notationOption.value">
                         {{ notationOption.text }}

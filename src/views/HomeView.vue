@@ -67,11 +67,7 @@ async function copyResult() {
           Passos:
         </h1>
 
-        <div class="flex w-full h-full hide-scrollbar">
-          <SidePanel />
-          <BoardComponent />
-          <SidePanel />
-        </div>
+        <BoardComponent />
         <p v-if="error" role="alert">
           {{ error }}
         </p>
