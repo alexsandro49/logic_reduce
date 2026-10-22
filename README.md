@@ -25,17 +25,16 @@
 
 ## 🧱 Funcionalidades
 
-- Listagem de sabores de pizza
-- Filtro por tipo (tradicional, especial, doce, etc)
-- Exibição de preços e descrições
-- Carrinho de compras
-- Design responsivo
+- Auxílio do aprendizado de Álgebra Booleana
+- Simplificação automática
+- Tabela verdade
+- Exemplos didáticos
 
 ---
 
 ## 📁 Estrutura de Pastas
 ```
-src/
+src/                # Projeto Typescript
 ├── assets/         # Imagens e ícones
 ├── components/     # Componentes reutilizáveis
 ├── routes/         # Configuração das rotas (Vue Router)
@@ -44,7 +43,16 @@ src/
 ├── utils/          # Funções utilitárias
 ├── App.vue         # Componente raiz
 ├── main.ts         # Inicialização do app
-├── src-tauri/      # Projeto Rust
+src-tauri/          # Projeto Rust
+├── capabilities/   # Arquivos de configuração
+├── icons/          # Ícones do aplicativo
+├── src/            # Código-fonte do backend
+├──── commands/     # Funções que o frontend pode chamar via IPC
+├──── models/       # Estruturas de dados que representam as entidades
+├──── services/     # Lógica de negócios
+├──── lib.rs        # Usado para configurar o construtor do Tauri e registrar plugins
+├──── main.rs       # Ponto de entrada principal do executável
+├── build.rs        # Script de compilação executado antes da construção do projeto
 ```
 
 ## Como executar o projeto:
