@@ -40,7 +40,8 @@ export const useSimplificationStore = defineStore(
           description: 'Regra aplicada durante a simplificação.',
         }));
       } catch (reason) {
-        error.value = typeof reason === 'string' ? reason : 'Não foi possível simplificar a expressão.';
+        error.value = typeof reason === 'string' ? reason : 
+          'Não foi possível simplificar a expressão.';
       } finally {
         isSimplifying.value = false;
       }
@@ -65,7 +66,7 @@ export const useSimplificationStore = defineStore(
     function addStep() {
       const value = expression.value.trim() || placeholder;
 
-      steps.value.push({value: value, rule: 'identity'})
+      steps.value.push({value: value, rule: 'identity'});
       expression.value = '';
     }
 

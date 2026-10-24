@@ -4,19 +4,41 @@ import { useSimplificationStore } from '../stores/simplification.ts';
 
 const configStore = useConfigStore();
 const simplificationStore = useSimplificationStore();
+
+function simplificationStepHelper(index: number, expression: string) {
+  return `${simplificationStore.stepsAutomatic[index - 1].expression} -> ${expression}`;
+}
 </script>
-
 <template>
-    <div class="steps-card" :style="{ backgroundColor: configStore.getColor('board') }">
-        <article v-for="(step, index) in simplificationStore.stepsAutomatic" :key="step.title" class="step">
-            <h2>{{ index + 1 }}. <span>{{ step.title }}</span></h2>
+  <div
+    class="steps-card"
+    :style="{ backgroundColor: configStore.getColor('board') }"
+  >
+    <article
+      v-for="(step, index) in simplificationStore.stepsAutomatic"
+      :key="step.title"
+      class="step"
+    >
+      <h2>{{ index + 1 }}. <span>{{ step.title }}</span></h2>
 
-            <p v-if="index == 0" class="step-expression">{{ simplificationStore.submittedExpression }} -> {{ step.expression }}</p>
-            <p v-else class="step-expression">{{ simplificationStore.stepsAutomatic[index - 1].expression }} -> {{ step.expression }}</p>
+      <p
+        v-if="index == 0"
+        class="step-expression"
+      >
+        {{ simplificationStore.submittedExpression }} -> {{ step.expression }}
+      </p>
+      <p
+        v-else
+        class="step-expression"
+      >
+        {{ simplificationStepHelper(index, step.expression) }}
+      </p>
 
-            <p class="step-description">{{ step.description }}</p>
-        </article>
-    </div>
+      <p class="step-description">
+        {{ step.description }}
+      </p>
+    </article>
+  </div>
 </template>
 
 <style scoped>
