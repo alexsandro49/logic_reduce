@@ -4,20 +4,18 @@ import HeaderComponent from '../components/HeaderComponent.vue';
 import ufalIcon from '@/assets/ufal-logo.svg';
 import { ref } from 'vue';
 import { useConfigStore } from '../stores/config.ts';
-// import { generateRandomExpression } from '../utils/expressionGenerator.ts';
-import { PhBook, PhCopySimple, PhGithubLogo, PhPlus, PhSquare } from '@phosphor-icons/vue';
+import { PhBook, PhCopySimple, PhEye, PhGithubLogo, PhLightbulbFilament, PhPlus } from '@phosphor-icons/vue';
 import { useSimplificationStore } from '../stores/simplification.ts';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import ActionButtons from '../components/ActionButtons.vue';
-import BoardComponent from '../components/BoardComponent.vue';
-import SidePanel from '../components/SidePanel.vue';
+import AutomaticSimplificationContainer from '../components/AutomaticSimplificationContainer.vue';
+import ManualSimplificationContainer from '../components/ManualSimplificationContainer.vue';
 
 const configStore = useConfigStore();
 const simplificationStore = useSimplificationStore();
 
-const result = ref('');
-const error = ref('');
 const copyButtonTittle = ref('COPIAR');
+const automaticSimplification = ref(false);
 
 function footerColorHelper(): string {
   const value = configStore.darkTheme ? 'board' : 'icon-color';
@@ -25,11 +23,16 @@ function footerColorHelper(): string {
 }
 
 async function copyResult() {
-  await writeText(result.value);
+  await writeText(simplificationStore.result);
   copyButtonTittle.value = 'COPIADO!';
   setTimeout(() => {
     copyButtonTittle.value = 'COPIAR';
   }, 1000);
+}
+
+function automaticSimplificationHelper() {
+  simplificationStore.simplification();
+  automaticSimplification.value = !automaticSimplification.value;
 }
 </script>
 
@@ -49,17 +52,30 @@ async function copyResult() {
             '--placeholder-color': configStore.getColor('input-text')
           }" type="text" aria-label="Expressão booleana">
         </label>
-        <div class="notation-control">
-          <button class="action-button" :style="{ backgroundColor: configStore.getColor('action-button') }"
-            type="button" @click="simplificationStore.addStep" aria-label="Adicionar passo">
+        <div class="notation-control w-full">
+          <button class="action-button self-stretch" :style="{ backgroundColor: configStore.getColor('action-button') }"
+            type="button" @click="simplificationStore.addStep" aria-label="Adicionar passo" v-if="!automaticSimplification">
             <PhPlus :size="32" :color="configStore.getColor('icon-color')" weight="bold" />
             <span class="tooltip" :style="{ backgroundColor: configStore.getColor('base') }">ADICIONAR</span>
           </button>
 
-          <ActionButtons @trash-button="simplificationStore.clearData"
+          <ActionButtons @check-button="simplificationStore.simplification" @trash-button="simplificationStore.clearData"
             @refresh-button="simplificationStore.randomExpressionHelper" check-button-label="Simplificar expressão"
             trash-button-label="Limpar expressão" refresh-button-label="Expressão aleatória"
             check-button-tooltip="SIMPLIFICAR" trash-button-tooltip="LIMPAR" refresh-button-tooltip="ALEATÓRIO" />
+          
+          <div class="notation-control ml-auto">
+            <button class="action-button" :style="{ backgroundColor: configStore.getColor('action-button') }"
+              type="button" @click="simplificationStore.addStep" aria-label="Adicionar passo">
+              <PhLightbulbFilament :size="32" :color="configStore.getColor('icon-color')" weight="fill" />
+              <span class="tooltip" :style="{ backgroundColor: configStore.getColor('base') }">ADICIONAR</span>
+            </button>
+            <button class="action-button" :style="{ backgroundColor: automaticSimplification ? configStore.getColor('board') : configStore.getColor('action-button') }"
+              type="button" @click="automaticSimplificationHelper" aria-label="Adicionar passo">
+              <PhEye :size="32" :color="configStore.getColor('icon-color')" weight="fill" />
+              <span class="tooltip" :style="{ backgroundColor: configStore.getColor('base') }">REVELAR RESULTADO</span>
+            </button>
+          </div>
         </div>
       </div>
       <section class="steps-section" aria-labelledby="steps-title">
@@ -67,18 +83,20 @@ async function copyResult() {
           Passos:
         </h1>
 
-        <BoardComponent />
-        <p v-if="error" role="alert">
-          {{ error }}
+        <AutomaticSimplificationContainer v-if="automaticSimplification" />
+        <ManualSimplificationContainer v-else />
+
+        <p v-if="simplificationStore.error" role="alert">
+          {{ simplificationStore.error }}
         </p>
       </section>
       <section class="result-row" aria-label="Resultado simplificado">
         <h2 class="font-text" :style="{ color: configStore.getColor('text') }">
           Forma simplificada:
         </h2>
-        <output class="result-value" :style="{ backgroundColor: configStore.getColor('board') }">{{ result }}</output>
+        <output class="result-value" :style="{ backgroundColor: configStore.getColor('board') }">{{ simplificationStore.result }}</output>
         <button class="copy-button" type="button" aria-label="Alternar tema" @click="copyResult"
-          :disabled="result === ''">
+          :disabled="simplificationStore.result === ''">
           <PhCopySimple :size="32" :color="configStore.getColor('text')" weight="fill" />
           <span class="tooltip" :style="{ backgroundColor: configStore.getColor('base') }">{{ copyButtonTittle }}</span>
         </button>

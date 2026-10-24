@@ -22,3 +22,10 @@ export type TruthTable = {
 }
 
 export type ReductionStep = { value: string; rule: string }
+
+export type StepStruct = {
+  rule_name: string,
+  after_rule: string
+};
+export type ReductionStepAutomatic = { title: string; expression: string; description: string }
+

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhPlus, PhX } from '@phosphor-icons/vue';
+import { PhX } from '@phosphor-icons/vue';
 import { useConfigStore } from '../stores/config';
 import { useSimplificationStore } from '../stores/simplification';
 

@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
 import { Ref, ref } from 'vue';
-import { ReductionStep } from '../utils/types';
-// import { invoke } from '@tauri-apps/api/core';
+import { ReductionStep, ReductionStepAutomatic, StepStruct } from '../utils/types';
 import { generateRandomExpression } from '../utils/expressionGenerator';
+import { invoke } from '@tauri-apps/api/core';
 
 export const useSimplificationStore = defineStore(
   'simplification',
@@ -16,46 +16,48 @@ export const useSimplificationStore = defineStore(
     const result = ref('');
     const submittedExpression = ref('');
 
-    // async function simplification() {
-    //   const source = expression.value.trim() || placeholder;
+    const stepsAutomatic: Ref<ReductionStepAutomatic[]> = ref([]);
 
-    //   isSimplifying.value = true;
-    //   error.value = '';
-    //   submittedExpression.value = source;
-    //   steps.value = [];
-    //   result.value = '';
+    async function simplification() {
+      const source = expression.value.trim() || placeholder;
 
-      // try {
-      //   const [simplifiedExpression, newSteps] = await invoke<[string, stepStruct[]]>(
-      //     'simplify_helper',
-      //     { source, notation: 'default' },
-      //   );
+      isSimplifying.value = true;
+      error.value = '';
+      submittedExpression.value = source;
+      stepsAutomatic.value = [];
+      result.value = '';
 
-      //   result.value = simplifiedExpression;
-      //   steps.value = newSteps.map((step) => ({
-      //     title: step.rule_name,
-      //     expression: step.after_rule,
-      //     description: 'Regra aplicada durante a simplificação.',
-      //   }));
-      // } catch (reason) {
-      //   error.value = typeof reason === 'string' ? reason :
-      //     'Não foi possível simplificar a expressão.';
-      // } finally {
-      //   isSimplifying.value = false;
-      // }
-    // }
+      try {
+        const [simplifiedExpression, newSteps] = await invoke<[string, StepStruct[]]>(
+          'simplify_helper',
+          { source },
+        );
+
+        result.value = simplifiedExpression;
+        stepsAutomatic.value = newSteps.map((step) => ({
+          title: step.rule_name,
+          expression: step.after_rule,
+          description: 'Regra aplicada durante a simplificação.',
+        }));
+      } catch (reason) {
+        error.value = typeof reason === 'string' ? reason : 'Não foi possível simplificar a expressão.';
+      } finally {
+        isSimplifying.value = false;
+      }
+    }
 
     function randomExpressionHelper() {
       clearData();
       expression.value =
         generateRandomExpression(expression.value);
-      // simplification();
+      simplification();
     }
 
     function clearData() {
       isSimplifying.value = false;
       error.value = '';
       steps.value = [];
+      stepsAutomatic.value = [];
       result.value = '';
       expression.value = '';
     }
@@ -75,13 +77,16 @@ export const useSimplificationStore = defineStore(
       expression,
       placeholder,
       isSimplifying,
-      // simplification,
+      simplification,
       steps,
       submittedExpression,
       randomExpressionHelper,
       clearData,
       addStep,
-      removeStep
+      removeStep,
+      stepsAutomatic,
+      error,
+      result
     };
   }
 );
