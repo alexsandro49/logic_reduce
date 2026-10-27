@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PhX } from '@phosphor-icons/vue';
+import { PhCaretDown, PhX } from '@phosphor-icons/vue';
 import { useConfigStore } from '../stores/config';
 import { useSimplificationStore } from '../stores/simplification';
 
@@ -27,7 +27,7 @@ const rules = [
   >
     <article
       v-for="(step, index) in simplificationStore.steps"
-      :key="step.value"
+      :key="index"
       class="step flex w-full justify-between h-12 mb-5 hover:bg-(--cor-hover)
       hover:text-white group"
       :style="{'--cor-hover': configStore.getColor('base')}"
@@ -35,7 +35,7 @@ const rules = [
       <div class="flex items-center gap-4">
         <h2>{{ index + 1 }}.</h2>
         <input
-          :value="step.value"
+          v-model="step.value"
           :style="{'--input-hover': configStore.getColor('board')}"
           class="group-hover:bg-(--input-hover)"
         >
@@ -59,19 +59,22 @@ const rules = [
             :style="{ backgroundColor: configStore.getColor('base') }"
           >REMOVER</span>
         </button>
-        <select
-          v-model="step.rule"
-          :style="{ backgroundColor: configStore.getColor('base') }"
-          aria-label="Notação"
-        >
-          <option
-            v-for="notationOption in rules"
-            :value="notationOption.value"
-            :key="notationOption.value"
+        <div class="rule-control">
+          <select
+            v-model="step.rule"
+            :style="{ backgroundColor: configStore.getColor('board') }"
+            aria-label="Notação"
           >
-            {{ notationOption.text }}
-          </option>
-        </select>
+            <option
+              v-for="notationOption in rules"
+              :value="notationOption.value"
+              :key="notationOption.value"
+            >
+              {{ notationOption.text }}
+            </option>
+          </select>
+          <PhCaretDown class="rule-caret" :size="16" aria-hidden="true" />
+        </div>
       </div>
     </article>
   </div>
@@ -120,6 +123,18 @@ select,
 
 .expression-field {
     @apply w-[367px] max-[760px]:w-full;
+}
+
+.rule-control {
+    @apply relative;
+}
+
+.rule-control select {
+    @apply appearance-none bg-none pr-9;
+}
+
+.rule-caret {
+    @apply pointer-events-none absolute right-[13px] top-1/2 -translate-y-1/2 text-[#242424];
 }
 
 .notation-control {

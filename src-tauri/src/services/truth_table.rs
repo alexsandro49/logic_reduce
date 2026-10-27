@@ -88,7 +88,7 @@ pub fn generate(
     })
 }
 
-fn collect_inputs<'a>(expression: &'a Expr, names: &mut BTreeSet<&'a str>) {
+pub(super) fn collect_inputs<'a>(expression: &'a Expr, names: &mut BTreeSet<&'a str>) {
     match expression {
         Expr::Var(name) => {
             names.insert(name);

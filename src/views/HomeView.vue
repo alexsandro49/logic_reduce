@@ -2,23 +2,42 @@
 import HeaderComponent from '../components/HeaderComponent.vue';
 
 import ufalIcon from '@/assets/ufal-logo.svg';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useConfigStore } from '../stores/config.ts';
-import { PhBook, PhCopySimple, PhEye, PhGithubLogo, PhLightbulbFilament, PhPlus } 
+import { PhBook, PhCopySimple, PhEye, PhGithubLogo, PhLightbulbFilament, PhPlus }
   from '@phosphor-icons/vue';
 import { useSimplificationStore } from '../stores/simplification.ts';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import ActionButtons from '../components/ActionButtons.vue';
-import AutomaticSimplificationContainer 
+import AutomaticSimplificationContainer
   from '../components/AutomaticSimplificationContainer.vue';
 import ManualSimplificationContainer
   from '../components/ManualSimplificationContainer.vue';
+import { invoke } from '@tauri-apps/api/core';
+import type { EquivalenceResult } from '../utils/types.ts';
 
 const configStore = useConfigStore();
 const simplificationStore = useSimplificationStore();
 
 const copyButtonTittle = ref('COPIAR');
 const automaticSimplification = ref(false);
+
+const isVerifying = ref(false);
+const verificationMessage = ref('');
+const verificationError = ref('');
+let verificationVersion = 0;
+
+watch(() => [
+  simplificationStore.steps.map(step => step.value),
+  automaticSimplification.value,
+  simplificationStore.submittedExpression,
+  simplificationStore.result,
+], () => {
+  verificationVersion++;
+  isVerifying.value = false;
+  verificationMessage.value = '';
+  verificationError.value = '';
+}, { deep: true, flush: 'sync' });
 
 function footerColorHelper(): string {
   const value = configStore.darkTheme ? 'board' : 'icon-color';
@@ -37,220 +56,149 @@ function automaticSimplificationHelper() {
   simplificationStore.simplification();
   automaticSimplification.value = !automaticSimplification.value;
 }
+
+async function verifyTruthTable() {
+  if (isVerifying.value) return;
+  verificationMessage.value = '';
+  verificationError.value = '';
+  if (!automaticSimplification.value && simplificationStore.steps.length < 2) {
+    verificationError.value = 'Adicione a expressão original e uma tentativa de simplificação.';
+    return;
+  }
+  const original = automaticSimplification.value
+    ? simplificationStore.submittedExpression
+    : simplificationStore.steps[0].value;
+  const candidate = automaticSimplification.value
+    ? simplificationStore.result
+    : simplificationStore.steps[simplificationStore.steps.length - 1].value;
+  if (!original.trim() || !candidate.trim()) {
+    verificationError.value = 'Informe as duas expressões antes de verificar.';
+    return;
+  }
+
+  const version = ++verificationVersion;
+  isVerifying.value = true;
+  try {
+    const result = await invoke<EquivalenceResult>('verify_equivalence', { original, candidate });
+    if (version !== verificationVersion) return;
+    if (result.equivalent) {
+      verificationMessage.value = 'As expressões são equivalentes.';
+    } else if (result.counterexample) {
+      const example = result.counterexample;
+      const inputs = Object.entries(example.inputs)
+        .map(([name, value]) => `${name} = ${Number(value)}`).join(', ');
+      verificationMessage.value = `As expressões não são equivalentes. ${
+        inputs ? `Para ${inputs}: ` : ''
+      }original = ${Number(example.original)}, tentativa = ${Number(example.candidate)}.`;
+    }
+  } catch (error) {
+    if (version !== verificationVersion) return;
+    verificationError.value = typeof error === 'string' ? error
+      : error instanceof Error ? error.message : 'Não foi possível verificar as expressões.';
+  } finally {
+    if (version === verificationVersion) isVerifying.value = false;
+  }
+}
 </script>
 
 <template>
-  <main
-    class="page-shell"
-    :class="{ dark: configStore.darkTheme }"
-  >
+  <main class="page-shell" :class="{ dark: configStore.darkTheme }">
     <HeaderComponent :active-window-button="0" />
-    <section
-      class="workspace"
-      :style="{
-        backgroundColor: configStore.darkTheme ?
-          configStore.getColor('background') : '#FFFFFF'
-      }"
-      aria-label="Simplificação de expressão booleana"
-    >
+    <section class="workspace" :style="{
+      backgroundColor: configStore.darkTheme ?
+        configStore.getColor('background') : '#FFFFFF'
+    }" aria-label="Simplificação de expressão booleana">
       <div class="controls-row">
         <label class="field expression-field">
-          <span
-            class="font-text"
-            :style="{ color: configStore.getColor('text') }"
-          >Expressão booleana:</span>
-          <input
-            v-model="simplificationStore.expression"
-            placeholder="~((~A + B) & (~B + C))"
-            :style="{
-              backgroundColor: configStore.getColor('input'),
-              color: configStore.getColor('input-text'),
-              '--placeholder-color': configStore.getColor('input-text')
-            }"
-            type="text"
-            aria-label="Expressão booleana"
-          >
+          <span class="font-text" :style="{ color: configStore.getColor('text') }">Expressão booleana:</span>
+          <input v-model="simplificationStore.expression" placeholder="~((~A + B) & (~B + C))" :style="{
+            backgroundColor: configStore.getColor('input'),
+            color: configStore.getColor('input-text'),
+            '--placeholder-color': configStore.getColor('input-text')
+          }" type="text" aria-label="Expressão booleana">
         </label>
         <div class="notation-control w-full">
-          <button
-            class="action-button self-stretch"
-            :style="{ backgroundColor: configStore.getColor('action-button') }"
-            type="button"
-            @click="simplificationStore.addStep"
-            aria-label="Adicionar passo"
-            v-if="!automaticSimplification"
-          >
-            <PhPlus
-              :size="32"
-              :color="configStore.getColor('icon-color')"
-              weight="bold"
-            />
-            <span
-              class="tooltip"
-              :style="{ backgroundColor: configStore.getColor('base') }"
-            >ADICIONAR</span>
+          <button class="action-button self-stretch" :style="{ backgroundColor: configStore.getColor('action-button') }"
+            type="button" @click="simplificationStore.addStep" aria-label="Adicionar passo"
+            v-if="!automaticSimplification">
+            <PhPlus :size="32" :color="configStore.getColor('icon-color')" weight="bold" />
+            <span class="tooltip" :style="{ backgroundColor: configStore.getColor('base') }">ADICIONAR</span>
           </button>
 
-          <ActionButtons
-            @check-button="simplificationStore.simplification"
-            @trash-button="simplificationStore.clearData"
-            @refresh-button="simplificationStore.randomExpressionHelper"
-            check-button-label="Simplificar expressão"
-            trash-button-label="Limpar expressão"
-            refresh-button-label="Expressão aleatória"
-            check-button-tooltip="SIMPLIFICAR"
-            trash-button-tooltip="LIMPAR"
-            refresh-button-tooltip="ALEATÓRIO"
-          />
-          
+          <ActionButtons @check-button="simplificationStore.simplification"
+            @trash-button="simplificationStore.clearData" @refresh-button="simplificationStore.randomExpressionHelper"
+            check-button-label="Simplificar expressão" trash-button-label="Limpar expressão"
+            refresh-button-label="Expressão aleatória" check-button-tooltip="SIMPLIFICAR" trash-button-tooltip="LIMPAR"
+            refresh-button-tooltip="ALEATÓRIO" />
+
           <div class="notation-control ml-auto">
-            <button
-              class="action-button"
-              :style="{ backgroundColor: configStore.getColor('action-button') }"
-              type="button"
-              @click="simplificationStore.addStep"
-              aria-label="Adicionar passo"
-            >
-              <PhLightbulbFilament
-                :size="32"
-                :color="configStore.getColor('icon-color')"
-                weight="fill"
-              />
-              <span
-                class="tooltip"
-                :style="{ backgroundColor: configStore.getColor('base') }"
-              >ADICIONAR</span>
+            <button class="action-button" :style="{ backgroundColor: configStore.getColor('action-button') }"
+              type="button" @click="verifyTruthTable" aria-label="Verificar equivalência das expressões"
+              :disabled="isVerifying || simplificationStore.isSimplifying" :aria-busy="isVerifying">
+              <PhLightbulbFilament :size="32" :color="configStore.getColor('icon-color')" weight="fill" />
+              <span class="tooltip" :style="{ backgroundColor: configStore.getColor('base') }">{{
+                isVerifying ? 'VERIFICANDO...' : 'VERIFICAR EQUIVALÊNCIA'
+              }}</span>
             </button>
-            <button
-              class="action-button"
-              :style="{ backgroundColor: automaticSimplification ?
-                configStore.getColor('board') : configStore.getColor('action-button') }"
-              type="button"
-              @click="automaticSimplificationHelper"
-              aria-label="Adicionar passo"
-            >
-              <PhEye
-                :size="32"
-                :color="configStore.getColor('icon-color')"
-                weight="fill"
-              />
-              <span
-                class="tooltip"
-                :style="{ backgroundColor: configStore.getColor('base') }"
-              >REVELAR RESULTADO</span>
+            <button class="action-button" :style="{
+              backgroundColor: automaticSimplification ?
+                configStore.getColor('board') : configStore.getColor('action-button')
+            }" type="button" @click="automaticSimplificationHelper" aria-label="Adicionar passo">
+              <PhEye :size="32" :color="configStore.getColor('icon-color')" weight="fill" />
+              <span class="tooltip tooltip-end" :style="{ backgroundColor: configStore.getColor('base') }">SIMPLIFICAÇÃO
+                AUTOMÁTICA</span>
             </button>
           </div>
         </div>
       </div>
-      <section
-        class="steps-section"
-        aria-labelledby="steps-title"
-      >
-        <h1
-          id="steps-title"
-          class="font-text"
-          :style="{ color: configStore.getColor('text') }"
-        >
+      <section class="steps-section" aria-labelledby="steps-title">
+        <h1 id="steps-title" class="font-text" :style="{ color: configStore.getColor('text') }">
           Passos:
         </h1>
 
         <AutomaticSimplificationContainer v-if="automaticSimplification" />
         <ManualSimplificationContainer v-else />
 
-        <p
-          v-if="simplificationStore.error"
-          role="alert"
-        >
+        <p v-if="simplificationStore.error" role="alert">
           {{ simplificationStore.error }}
         </p>
+        <p v-if="verificationMessage" :style="{ color: configStore.darkTheme ? 
+          configStore.getColor('board') : configStore.getColor('background')}"
+          role="status">{{ verificationMessage }}</p>
+        <p v-if="verificationError" :style="{ color: configStore.darkTheme ? 
+          configStore.getColor('board') : configStore.getColor('background')}"
+          role="alert">{{ verificationError }}</p>
       </section>
-      <section
-        class="result-row"
-        aria-label="Resultado simplificado"
-      >
-        <h2
-          class="font-text"
-          :style="{ color: configStore.getColor('text') }"
-        >
+      <section class="result-row" aria-label="Resultado simplificado">
+        <h2 class="font-text" :style="{ color: configStore.getColor('text') }">
           Forma simplificada:
         </h2>
-        <output
-          class="result-value"
-          :style="{ backgroundColor: configStore.getColor('board') }"
-        >{{ simplificationStore.result }}</output>
-        <button
-          class="copy-button"
-          type="button"
-          aria-label="Alternar tema"
-          @click="copyResult"
-          :disabled="simplificationStore.result === ''"
-        >
-          <PhCopySimple
-            :size="32"
-            :color="configStore.getColor('text')"
-            weight="fill"
-          />
-          <span
-            class="tooltip"
-            :style="{ backgroundColor: configStore.getColor('base') }"
-          >{{ copyButtonTittle }}</span>
+        <output class="result-value" :style="{ backgroundColor: configStore.getColor('board') }">{{
+          simplificationStore.result }}</output>
+        <button class="copy-button" type="button" aria-label="Alternar tema" @click="copyResult"
+          :disabled="simplificationStore.result === ''">
+          <PhCopySimple :size="32" :color="configStore.getColor('text')" weight="fill" />
+          <span class="tooltip" :style="{ backgroundColor: configStore.getColor('base') }">{{ copyButtonTittle }}</span>
         </button>
       </section>
     </section>
-    <footer
-      class="page-footer"
-      :style="{ borderColor: footerColorHelper() }"
-    >
+    <footer class="page-footer" :style="{ borderColor: footerColorHelper() }">
       <strong :style="{ color: footerColorHelper() }">2026</strong>
-      <button
-        class="action-button"
-        :style="{ backgroundColor: configStore.getColor('footer-buttons-background') }"
-        type="button"
-        aria-label="Alternar tema"
-      >
-        <img
-          :src="ufalIcon"
-          class="ufal-button-img"
-          alt="Moon icon"
-          aria-hidden="true"
-        >
-        <span
-          class="footer-tooltip"
-          :style="{ backgroundColor: configStore.getColor('base') }"
-        >UFAL</span>
+      <button class="action-button" :style="{ backgroundColor: configStore.getColor('footer-buttons-background') }"
+        type="button" aria-label="Alternar tema">
+        <img :src="ufalIcon" class="ufal-button-img" alt="Moon icon" aria-hidden="true">
+        <span class="footer-tooltip" :style="{ backgroundColor: configStore.getColor('base') }">UFAL</span>
       </button>
-      <button
-        class="action-button"
-        :style="{ backgroundColor: configStore.getColor('footer-buttons-background') }"
-        type="button"
-        aria-label="Alternar tema"
-      >
-        <PhBook
-          :size="32"
-          :color="configStore.getColor('footer-buttons-color')"
-          weight="fill"
-        />
-        <span
-          class="footer-tooltip"
-          :style="{ backgroundColor: configStore.getColor('base') }"
-        >TRABALHO
+      <button class="action-button" :style="{ backgroundColor: configStore.getColor('footer-buttons-background') }"
+        type="button" aria-label="Alternar tema">
+        <PhBook :size="32" :color="configStore.getColor('footer-buttons-color')" weight="fill" />
+        <span class="footer-tooltip" :style="{ backgroundColor: configStore.getColor('base') }">TRABALHO
           RELACIONADO</span>
       </button>
-      <button
-        class="action-button"
-        :style="{ backgroundColor: configStore.getColor('footer-buttons-background') }"
-        type="button"
-        aria-label="Alternar tema"
-      >
-        <PhGithubLogo
-          :size="32"
-          :color="configStore.getColor('footer-buttons-color')"
-          weight="fill"
-        />
-        <span
-          class="footer-tooltip"
-          :style="{ backgroundColor: configStore.getColor('base') }"
-        >REPOSITÓRIO</span>
+      <button class="action-button" :style="{ backgroundColor: configStore.getColor('footer-buttons-background') }"
+        type="button" aria-label="Alternar tema">
+        <PhGithubLogo :size="32" :color="configStore.getColor('footer-buttons-color')" weight="fill" />
+        <span class="footer-tooltip" :style="{ backgroundColor: configStore.getColor('base') }">REPOSITÓRIO</span>
       </button>
     </footer>
   </main>
@@ -382,6 +330,10 @@ select,
 
 .tooltip {
   @apply -bottom-[31px] -left-3;
+}
+
+.tooltip-end {
+  @apply left-auto right-0;
 }
 
 .footer-tooltip {

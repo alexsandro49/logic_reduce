@@ -9,6 +9,15 @@ export type Color = { color: string, tags: string[] };
 
 export type TruthTableRows = number[];
 
+export type EquivalenceResult = {
+  equivalent: boolean;
+  counterexample: {
+    inputs: Record<string, boolean>;
+    original: boolean;
+    candidate: boolean;
+  } | null;
+};
+
 export type TruthTableRow = {
   inputs: number[];
   outputs: number[];

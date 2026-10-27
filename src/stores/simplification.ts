@@ -12,7 +12,19 @@ export const useSimplificationStore = defineStore(
 
     const isSimplifying = ref(false);
     const error = ref('');
-    const steps: Ref<ReductionStep[]> = ref([]);
+    // const steps: Ref<ReductionStep[]> = ref([]);
+    const steps: Ref<ReductionStep[]> = ref([
+      {value:"~((~A + B) & (~B + C))", rule: ""},
+      {value:"~((B + ~A) & (~B + C))", rule: ""},
+      {value:"~((B + ~A) & (C + ~B))", rule: ""},
+      {value:"~(B + ~A) + ~(C + ~B)", rule: ""},
+      {value:"(~B & ~~A) + ~(C + ~B)", rule: ""},
+      {value:"(~B & A) + ~(C + ~B)", rule: ""},
+      {value:"(A & ~B) + ~(C + ~B)", rule: ""},
+      {value:"(A & ~B) + (~C & ~~B)", rule: ""},
+      {value:"(A & ~B) + (~C & B)", rule: ""},
+      {value:"(A & ~B) + (B & ~C)", rule: ""}
+    ]);
     const result = ref('');
     const submittedExpression = ref('');
 
