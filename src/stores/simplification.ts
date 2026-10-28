@@ -14,16 +14,16 @@ export const useSimplificationStore = defineStore(
     const error = ref('');
     // const steps: Ref<ReductionStep[]> = ref([]);
     const steps: Ref<ReductionStep[]> = ref([
-      { value: "~((~A + B) & (~B + C))", rule: "commutative" },
-      { value: "~((B + ~A) & (~B + C))", rule: "commutative" },
-      { value: "~((B + ~A) & (C + ~B))", rule: "de_morgan" },
-      { value: "~(B + ~A) + ~(C + ~B)", rule: "de_morgan" },
-      { value: "(~B & ~~A) + ~(C + ~B)", rule: "double_negative" },
-      { value: "(~B & A) + ~(C + ~B)", rule: "commutative" },
-      { value: "(A & ~B) + ~(C + ~B)", rule: "de_morgan" },
-      { value: "(A & ~B) + (~C & ~~B)", rule: "double_negative" },
-      { value: "(A & ~B) + (~C & B)", rule: "commutative" },
-      { value: "(A & ~B) + (B & ~C)", rule: "final" }
+      { value: '~((~A + B) & (~B + C))', rule: 'commutative' },
+      { value: '~((B + ~A) & (~B + C))', rule: 'commutative' },
+      { value: '~((B + ~A) & (C + ~B))', rule: 'de_morgan' },
+      { value: '~(B + ~A) + ~(C + ~B)', rule: 'de_morgan' },
+      { value: '(~B & ~~A) + ~(C + ~B)', rule: 'double_negative' },
+      { value: '(~B & A) + ~(C + ~B)', rule: 'commutative' },
+      { value: '(A & ~B) + ~(C + ~B)', rule: 'de_morgan' },
+      { value: '(A & ~B) + (~C & ~~B)', rule: 'double_negative' },
+      { value: '(A & ~B) + (~C & B)', rule: 'commutative' },
+      { value: '(A & ~B) + (B & ~C)', rule: 'final' }
     ]);
     const result = ref('');
     const submittedExpression = ref('');
