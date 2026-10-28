@@ -14,16 +14,16 @@ export const useSimplificationStore = defineStore(
     const error = ref('');
     // const steps: Ref<ReductionStep[]> = ref([]);
     const steps: Ref<ReductionStep[]> = ref([
-      {value:"~((~A + B) & (~B + C))", rule: ""},
-      {value:"~((B + ~A) & (~B + C))", rule: ""},
-      {value:"~((B + ~A) & (C + ~B))", rule: ""},
-      {value:"~(B + ~A) + ~(C + ~B)", rule: ""},
-      {value:"(~B & ~~A) + ~(C + ~B)", rule: ""},
-      {value:"(~B & A) + ~(C + ~B)", rule: ""},
-      {value:"(A & ~B) + ~(C + ~B)", rule: ""},
-      {value:"(A & ~B) + (~C & ~~B)", rule: ""},
-      {value:"(A & ~B) + (~C & B)", rule: ""},
-      {value:"(A & ~B) + (B & ~C)", rule: ""}
+      { value: "~((~A + B) & (~B + C))", rule: "commutative" },
+      { value: "~((B + ~A) & (~B + C))", rule: "commutative" },
+      { value: "~((B + ~A) & (C + ~B))", rule: "de_morgan" },
+      { value: "~(B + ~A) + ~(C + ~B)", rule: "de_morgan" },
+      { value: "(~B & ~~A) + ~(C + ~B)", rule: "double_negative" },
+      { value: "(~B & A) + ~(C + ~B)", rule: "commutative" },
+      { value: "(A & ~B) + ~(C + ~B)", rule: "de_morgan" },
+      { value: "(A & ~B) + (~C & ~~B)", rule: "double_negative" },
+      { value: "(A & ~B) + (~C & B)", rule: "commutative" },
+      { value: "(A & ~B) + (B & ~C)", rule: "final" }
     ]);
     const result = ref('');
     const submittedExpression = ref('');
@@ -52,7 +52,7 @@ export const useSimplificationStore = defineStore(
           description: 'Regra aplicada durante a simplificação.',
         }));
       } catch (reason) {
-        error.value = typeof reason === 'string' ? reason : 
+        error.value = typeof reason === 'string' ? reason :
           'Não foi possível simplificar a expressão.';
       } finally {
         isSimplifying.value = false;
@@ -78,7 +78,7 @@ export const useSimplificationStore = defineStore(
     function addStep() {
       const value = expression.value.trim() || placeholder;
 
-      steps.value.push({value: value, rule: 'identity'});
+      steps.value.push({ value: value, rule: 'identity' });
       expression.value = '';
     }
 

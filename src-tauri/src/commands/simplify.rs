@@ -1,6 +1,7 @@
 use crate::models::notation;
 use crate::models::parser;
 use crate::services::boolean_algebra;
+use crate::services::manual_hint;
 
 use serde::Serialize;
 
@@ -8,6 +9,16 @@ use serde::Serialize;
 pub struct Step {
     rule_name: String,
     after_rule: String,
+}
+
+#[tauri::command]
+pub fn manual_completion(source: &str) -> Result<manual_hint::ManualCompletion, String> {
+    manual_hint::completion(source)
+}
+
+#[tauri::command]
+pub fn manual_step_hint(previous: &str, selected_rule: &str) -> Result<String, String> {
+    manual_hint::for_step(previous, selected_rule)
 }
 
 #[tauri::command]

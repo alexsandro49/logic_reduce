@@ -18,6 +18,17 @@ export type EquivalenceResult = {
   } | null;
 };
 
+export type ManualCompletion = {
+  complete: boolean;
+  next_rule: string | null;
+};
+
+export type ManualStepValidation = {
+  equivalence: EquivalenceResult;
+  law_valid: boolean;
+  hint: string;
+};
+
 export type TruthTableRow = {
   inputs: number[];
   outputs: number[];

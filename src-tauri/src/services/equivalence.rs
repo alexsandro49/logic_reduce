@@ -14,7 +14,7 @@ pub struct Counterexample {
 
 #[derive(Debug, Serialize)]
 pub struct EquivalenceResult {
-    equivalent: bool,
+    pub equivalent: bool,
     counterexample: Option<Counterexample>,
 }
 

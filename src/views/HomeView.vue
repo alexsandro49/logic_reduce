@@ -4,7 +4,7 @@ import HeaderComponent from '../components/HeaderComponent.vue';
 import ufalIcon from '@/assets/ufal-logo.svg';
 import { ref, watch } from 'vue';
 import { useConfigStore } from '../stores/config.ts';
-import { PhBook, PhCopySimple, PhEye, PhGithubLogo, PhPlus }
+import { PhBook, PhCopySimple, PhEye, PhGithubLogo, PhLightbulbFilament, PhPlus }
   from '@phosphor-icons/vue';
 import { useSimplificationStore } from '../stores/simplification.ts';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
@@ -14,7 +14,9 @@ import AutomaticSimplificationContainer
 import ManualSimplificationContainer
   from '../components/ManualSimplificationContainer.vue';
 import { invoke } from '@tauri-apps/api/core';
-import type { EquivalenceResult } from '../utils/types.ts';
+import type {
+  EquivalenceResult, ManualCompletion, ManualStepValidation,
+} from '../utils/types.ts';
 
 const configStore = useConfigStore();
 const simplificationStore = useSimplificationStore();
@@ -26,10 +28,11 @@ const isVerifying = ref(false);
 const verificationMessage = ref('');
 const verificationError = ref('');
 const stepVerificationResults = ref<boolean[]>([]);
+const hintTooltip = ref('DICA');
 let verificationVersion = 0;
 
 watch(() => [
-  simplificationStore.steps.map(step => step.value),
+  simplificationStore.steps.map(step => [step.value, step.rule]),
   automaticSimplification.value,
   simplificationStore.submittedExpression,
   simplificationStore.result,
@@ -39,6 +42,7 @@ watch(() => [
   verificationMessage.value = '';
   verificationError.value = '';
   stepVerificationResults.value = [];
+  hintTooltip.value = 'DICA';
 }, { deep: true, flush: 'sync' });
 
 function footerColorHelper(): string {
@@ -59,12 +63,14 @@ function automaticSimplificationHelper() {
   automaticSimplification.value = !automaticSimplification.value;
 }
 
-async function verifyTruthTable() {
+async function verifyTruthTable(requestHint = false) {
   if (isVerifying.value) return;
   verificationMessage.value = '';
   verificationError.value = '';
+  hintTooltip.value = 'DICA';
   if (!automaticSimplification.value && simplificationStore.steps.length < 2) {
     verificationError.value = 'Adicione a expressão original e uma tentativa de simplificação.';
+    if (requestHint) hintTooltip.value = verificationError.value;
     return;
   }
   const original = automaticSimplification.value
@@ -75,37 +81,89 @@ async function verifyTruthTable() {
     : simplificationStore.steps[simplificationStore.steps.length - 1].value;
   if (!original.trim() || !candidate.trim()) {
     verificationError.value = 'Informe as duas expressões antes de verificar.';
+    if (requestHint) hintTooltip.value = verificationError.value;
     return;
   }
 
   const version = ++verificationVersion;
   isVerifying.value = true;
   try {
-    const candidates = automaticSimplification.value
-      ? [candidate]
-      : simplificationStore.steps.slice(1).map(step => step.value);
-    const results = await Promise.all(candidates.map(candidate =>
-      invoke<EquivalenceResult>('verify_equivalence', { original, candidate }),
-    ));
+    let results: EquivalenceResult[];
+    let validations: ManualStepValidation[] = [];
+    if (automaticSimplification.value) {
+      results = [await invoke<EquivalenceResult>('verify_equivalence', {
+        original, candidate,
+      })];
+    } else {
+      validations = await Promise.all(
+        simplificationStore.steps.slice(0, -1).map((step, index) =>
+          invoke<ManualStepValidation>('verify_manual_step', {
+            original,
+            previous: step.value,
+            candidate: simplificationStore.steps[index + 1].value,
+            selectedRule: step.rule,
+          }),
+        ),
+      );
+      results = validations.map(validation => validation.equivalence);
+    }
     if (version !== verificationVersion) return;
     if (!automaticSimplification.value) {
-      stepVerificationResults.value = [true, ...results.map(result => result.equivalent)];
+      stepVerificationResults.value = simplificationStore.steps.map((_, index) =>
+        (index === 0 || results[index - 1].equivalent)
+        && (index === validations.length || validations[index].law_valid),
+      );
     }
-    const result = results[results.length - 1];
-    if (result.equivalent) {
-      verificationMessage.value = 'As expressões são equivalentes.';
-    } else if (result.counterexample) {
+    const firstIncorrectIndex = results.findIndex((result, index) =>
+      !result.equivalent || (!automaticSimplification.value
+        && !validations[index].law_valid),
+    );
+    const resultIndex = firstIncorrectIndex === -1
+      ? results.length - 1 : firstIncorrectIndex;
+    const result = results[resultIndex];
+    if (!result.equivalent && result.counterexample) {
       const example = result.counterexample;
       const inputs = Object.entries(example.inputs)
         .map(([name, value]) => `${name} = ${Number(value)}`).join(', ');
-      verificationMessage.value = `As expressões não são equivalentes. ${
-        inputs ? `Para ${inputs}: ` : ''
-      }original = ${Number(example.original)}, tentativa = ${Number(example.candidate)}.`;
+      verificationMessage.value = 'As expressões não são equivalentes. '
+        + (inputs ? `Para ${inputs}: ` : '')
+        + `original = ${Number(example.original)}, `
+        + `tentativa = ${Number(example.candidate)}.`;
+    }
+    if (!automaticSimplification.value && firstIncorrectIndex !== -1) {
+      verificationError.value = `Passo ${firstIncorrectIndex + 1}: `
+        + validations[firstIncorrectIndex].hint;
+      if (requestHint) hintTooltip.value = verificationError.value;
+      return;
+    }
+    if (result.equivalent) {
+      if (!automaticSimplification.value) {
+        const completion = await invoke<ManualCompletion>('manual_completion', {
+          source: candidate,
+        });
+        if (version !== verificationVersion) return;
+        if (completion.complete) {
+          verificationMessage.value = 'Simplificação concluída. '
+            + 'As expressões e as leis de todos os passos estão corretas.';
+          if (requestHint) hintTooltip.value = verificationMessage.value;
+        } else {
+          verificationError.value = 'Tentativa incompleta: os passos adicionados '
+            + 'estão corretos, mas a última expressão ainda pode ser simplificada.';
+          if (requestHint) {
+            hintTooltip.value = completion.next_rule
+              ? `Tentativa incompleta. Continue com a lei ${completion.next_rule}.`
+              : verificationError.value;
+          }
+        }
+      } else {
+        verificationMessage.value = 'As expressões são equivalentes.';
+      }
     }
   } catch (error) {
     if (version !== verificationVersion) return;
     verificationError.value = typeof error === 'string' ? error
       : error instanceof Error ? error.message : 'Não foi possível verificar as expressões.';
+    if (requestHint) hintTooltip.value = verificationError.value;
   } finally {
     if (version === verificationVersion) isVerifying.value = false;
   }
@@ -136,13 +194,36 @@ async function verifyTruthTable() {
             <span class="tooltip" :style="{ backgroundColor: configStore.getColor('base') }">ADICIONAR</span>
           </button>
 
-          <ActionButtons @check-button="() => automaticSimplification ? simplificationStore.simplification() : verifyTruthTable()"
+          <ActionButtons
+            @check-button="() => automaticSimplification ? simplificationStore.simplification() : verifyTruthTable()"
             @trash-button="simplificationStore.clearData" @refresh-button="simplificationStore.randomExpressionHelper"
             check-button-label="Simplificar expressão" trash-button-label="Limpar expressão"
             refresh-button-label="Expressão aleatória" check-button-tooltip="SIMPLIFICAR" trash-button-tooltip="LIMPAR"
             refresh-button-tooltip="ALEATÓRIO" />
 
           <div class="notation-control ml-auto">
+            <button
+              v-if="!automaticSimplification"
+              class="action-button"
+              :style="{ backgroundColor: configStore.getColor('action-button') }"
+              type="button"
+              aria-label="Mostrar dica para a simplificação manual"
+              aria-describedby="manual-hint-tooltip"
+              :disabled="isVerifying || simplificationStore.isSimplifying"
+              :aria-busy="isVerifying"
+              @click="verifyTruthTable(true)"
+            >
+              <PhLightbulbFilament
+                :size="32" :color="configStore.getColor('icon-color')" weight="fill"
+              />
+              <span
+                id="manual-hint-tooltip" role="tooltip" aria-live="polite"
+                class="tooltip hint-tooltip"
+                :class="{ 'hint-tooltip-visible': hintTooltip !== 'DICA' }"
+                :style="{ backgroundColor: configStore.getColor('base') }"
+              >{{ hintTooltip }}</span>
+            </button>
+
             <button class="action-button" :style="{
               backgroundColor: automaticSimplification ?
                 configStore.getColor('board') : configStore.getColor('action-button')
@@ -160,20 +241,20 @@ async function verifyTruthTable() {
         </h1>
 
         <AutomaticSimplificationContainer v-if="automaticSimplification" />
-        <ManualSimplificationContainer
-          v-else
-          :verification-results="stepVerificationResults"
-        />
+        <ManualSimplificationContainer v-else :verification-results="stepVerificationResults" />
 
         <p v-if="simplificationStore.error" role="alert">
           {{ simplificationStore.error }}
         </p>
-        <p v-if="verificationMessage" :style="{ color: configStore.darkTheme ? 
-          configStore.getColor('board') : configStore.getColor('background')}"
-          role="status">{{ verificationMessage }}</p>
-        <p v-if="verificationError" :style="{ color: configStore.darkTheme ? 
-          configStore.getColor('board') : configStore.getColor('background')}"
-          role="alert">{{ verificationError }}</p>
+        <p v-if="verificationMessage" :style="{
+          color: configStore.darkTheme ?
+            configStore.getColor('board') : configStore.getColor('background')
+        }" role="status">{{ verificationMessage }}
+        </p>
+        <p v-if="verificationError" :style="{
+          color: configStore.darkTheme ?
+            configStore.getColor('board') : configStore.getColor('background')
+        }" role="alert">{{ verificationError }}</p>
       </section>
       <section class="result-row" aria-label="Resultado simplificado">
         <h2 class="font-text" :style="{ color: configStore.getColor('text') }">
@@ -340,6 +421,15 @@ select,
 
 .tooltip-end {
   @apply left-auto right-0;
+}
+
+.hint-tooltip {
+  @apply top-full right-0 bottom-auto left-auto z-20 mt-2 whitespace-normal text-left;
+  width: min(32rem, calc(100vw - 3rem));
+}
+
+.hint-tooltip-visible {
+  @apply block;
 }
 
 .footer-tooltip {
