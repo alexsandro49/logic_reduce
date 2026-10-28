@@ -22,6 +22,7 @@ export const useConfigStore = defineStore(
             'dark-cell-text', 'light-cell-text', 'icon-color', 'footer-buttons-color']
         },
         { color: '#00000000', tags: ['transparent'] },
+        { color: '#f05454', tags: ['error'] },
       ],
       [
         { color: '#071A52', tags: ['base'] },
@@ -36,6 +37,7 @@ export const useConfigStore = defineStore(
             'dark-cell-text', 'light-cell-text', 'icon-color', 'footer-buttons-color']
         },
         { color: '#00000000', tags: ['transparent'] },
+        { color: '#f05454', tags: ['error'] },
       ],
       [
         { color: '#136b3d', tags: ['base', 'dark-cell-text', 'hightlighted-cell'] },
@@ -50,6 +52,7 @@ export const useConfigStore = defineStore(
             'footer-buttons-color', 'input-text', 'header-table']
         },
         { color: '#00000000', tags: ['transparent'] },
+        { color: '#f05454', tags: ['error'] },
       ],
       [
         { color: '#f8639a', tags: ['base', 'action-button', 'footer-buttons-background']},
@@ -62,6 +65,7 @@ export const useConfigStore = defineStore(
             'header-table']
         },
         { color: '#00000000', tags: ['transparent'] },
+        { color: '#f05454', tags: ['error'] },
       ],
       [
         {
@@ -79,6 +83,7 @@ export const useConfigStore = defineStore(
             'light-cell-text', 'header-tab']
         },
         { color: '#00000000', tags: ['transparent'] },
+        { color: '#f05454', tags: ['error'] },
       ],
       [
         {
@@ -93,6 +98,7 @@ export const useConfigStore = defineStore(
         { color: '#EEEEEE', tags: ['board', 'header-tab', 'input', 'light-cell-text',
           'dark-text'] },
         { color: '#00000000', tags: ['transparent'] },
+        { color: '#f05454', tags: ['error'] },
       ]
     ];
 

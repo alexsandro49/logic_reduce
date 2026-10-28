@@ -6,6 +6,10 @@ import { useSimplificationStore } from '../stores/simplification';
 const configStore = useConfigStore();
 const simplificationStore = useSimplificationStore();
 
+const props = defineProps<{
+  verificationResults: boolean[];
+}>();
+
 const rules = [
   { text: 'IDENTIDADE', value: 'identity' },
   { text: 'DOMINAÇÃO', value: 'null' },
@@ -18,6 +22,16 @@ const rules = [
   { text: 'ABSORÇÃO', value: 'absorption' },
   { text: 'D. MORGAN', value: 'de_morgan' },
 ];
+
+function stepColorBackgroundHelper(index: number) {
+    if (props.verificationResults[index] === undefined) {
+        return "transparent"
+    } else if (props.verificationResults[index] === true) {
+        return "action-button"
+    } else {
+        return "error"
+    }
+}
 </script>
 
 <template>
@@ -30,10 +44,24 @@ const rules = [
       :key="index"
       class="step flex w-full justify-between h-12 mb-5 hover:bg-(--cor-hover)
       hover:text-white group"
-      :style="{'--cor-hover': configStore.getColor('base')}"
+
+      :style="{
+        '--cor-hover': configStore.getColor('base'),
+        '--rule-background': configStore.getColor('board'),
+
+        '--step-feedback-background': configStore.getColor(stepColorBackgroundHelper(index)),
+        '--step-feedback-text': configStore.getColor('background'),
+        '--step-feedback-border': configStore.getColor(verificationResults[index] === undefined ? 'transparent' : 'background'),
+      }"
     >
       <div class="flex items-center gap-4">
-        <h2>{{ index + 1 }}.</h2>
+        <h2>
+          {{ index + 1 }}.
+          <span v-if="verificationResults[index] !== undefined" class="sr-only">
+            {{ verificationResults[index] ? 'Expressão equivalente à original'
+              : 'Expressão não equivalente à original' }}
+          </span>
+        </h2>
         <input
           v-model="step.value"
           :style="{'--input-hover': configStore.getColor('board')}"
@@ -62,7 +90,6 @@ const rules = [
         <div class="rule-control">
           <select
             v-model="step.rule"
-            :style="{ backgroundColor: configStore.getColor('board') }"
             aria-label="Notação"
           >
             <option
@@ -131,6 +158,7 @@ select,
 
 .rule-control select {
     @apply appearance-none bg-none pr-9;
+    background-color: var(--step-feedback-background, var(--rule-background));
 }
 
 .rule-caret {
@@ -184,7 +212,22 @@ select,
 
 
 .step h2 {
-    @apply text-4xl leading-[1.25] max-[760px]:text-[22px];
+    @apply rounded-[10px] border-[1.5px] px-2 text-4xl leading-[1.25] max-[760px]:text-[22px];
+    background-color: var(--step-feedback-background, transparent);
+    color: var(--step-feedback-text, inherit);
+    border-color: var(--step-feedback-border, transparent);
+}
+
+.step-valid {
+    --step-feedback-background: #a3e9df;
+    --step-feedback-text: #266c65;
+    --step-feedback-border: #91aaa5;
+}
+
+.step-invalid {
+    --step-feedback-background: #eb9999;
+    --step-feedback-text: #773535;
+    --step-feedback-border: #ad8f8f;
 }
 
 .step-expression,

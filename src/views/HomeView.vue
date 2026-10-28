@@ -25,6 +25,7 @@ const automaticSimplification = ref(false);
 const isVerifying = ref(false);
 const verificationMessage = ref('');
 const verificationError = ref('');
+const stepVerificationResults = ref<boolean[]>([]);
 let verificationVersion = 0;
 
 watch(() => [
@@ -37,6 +38,7 @@ watch(() => [
   isVerifying.value = false;
   verificationMessage.value = '';
   verificationError.value = '';
+  stepVerificationResults.value = [];
 }, { deep: true, flush: 'sync' });
 
 function footerColorHelper(): string {
@@ -79,8 +81,17 @@ async function verifyTruthTable() {
   const version = ++verificationVersion;
   isVerifying.value = true;
   try {
-    const result = await invoke<EquivalenceResult>('verify_equivalence', { original, candidate });
+    const candidates = automaticSimplification.value
+      ? [candidate]
+      : simplificationStore.steps.slice(1).map(step => step.value);
+    const results = await Promise.all(candidates.map(candidate =>
+      invoke<EquivalenceResult>('verify_equivalence', { original, candidate }),
+    ));
     if (version !== verificationVersion) return;
+    if (!automaticSimplification.value) {
+      stepVerificationResults.value = [true, ...results.map(result => result.equivalent)];
+    }
+    const result = results[results.length - 1];
     if (result.equivalent) {
       verificationMessage.value = 'As expressões são equivalentes.';
     } else if (result.counterexample) {
@@ -157,7 +168,10 @@ async function verifyTruthTable() {
         </h1>
 
         <AutomaticSimplificationContainer v-if="automaticSimplification" />
-        <ManualSimplificationContainer v-else />
+        <ManualSimplificationContainer
+          v-else
+          :verification-results="stepVerificationResults"
+        />
 
         <p v-if="simplificationStore.error" role="alert">
           {{ simplificationStore.error }}
