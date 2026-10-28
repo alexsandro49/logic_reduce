@@ -4,7 +4,7 @@ import HeaderComponent from '../components/HeaderComponent.vue';
 import ufalIcon from '@/assets/ufal-logo.svg';
 import { ref, watch } from 'vue';
 import { useConfigStore } from '../stores/config.ts';
-import { PhBook, PhCopySimple, PhEye, PhGithubLogo, PhLightbulbFilament, PhPlus }
+import { PhBook, PhCopySimple, PhEye, PhGithubLogo, PhPlus }
   from '@phosphor-icons/vue';
 import { useSimplificationStore } from '../stores/simplification.ts';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
@@ -136,21 +136,13 @@ async function verifyTruthTable() {
             <span class="tooltip" :style="{ backgroundColor: configStore.getColor('base') }">ADICIONAR</span>
           </button>
 
-          <ActionButtons @check-button="simplificationStore.simplification"
+          <ActionButtons @check-button="() => automaticSimplification ? simplificationStore.simplification() : verifyTruthTable()"
             @trash-button="simplificationStore.clearData" @refresh-button="simplificationStore.randomExpressionHelper"
             check-button-label="Simplificar expressão" trash-button-label="Limpar expressão"
             refresh-button-label="Expressão aleatória" check-button-tooltip="SIMPLIFICAR" trash-button-tooltip="LIMPAR"
             refresh-button-tooltip="ALEATÓRIO" />
 
           <div class="notation-control ml-auto">
-            <button class="action-button" :style="{ backgroundColor: configStore.getColor('action-button') }"
-              type="button" @click="verifyTruthTable" aria-label="Verificar equivalência das expressões"
-              :disabled="isVerifying || simplificationStore.isSimplifying" :aria-busy="isVerifying">
-              <PhLightbulbFilament :size="32" :color="configStore.getColor('icon-color')" weight="fill" />
-              <span class="tooltip" :style="{ backgroundColor: configStore.getColor('base') }">{{
-                isVerifying ? 'VERIFICANDO...' : 'VERIFICAR EQUIVALÊNCIA'
-              }}</span>
-            </button>
             <button class="action-button" :style="{
               backgroundColor: automaticSimplification ?
                 configStore.getColor('board') : configStore.getColor('action-button')
