@@ -2,7 +2,7 @@
 import HeaderComponent from '../components/HeaderComponent.vue';
 
 import ufalIcon from '@/assets/ufal-logo.svg';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useConfigStore } from '../stores/config.ts';
 import { PhBook, PhCopySimple, PhEye, PhGithubLogo, PhLightbulbFilament, PhPlus }
   from '@phosphor-icons/vue';
@@ -28,7 +28,9 @@ const isVerifying = ref(false);
 const verificationMessage = ref('');
 const verificationError = ref('');
 const stepVerificationResults = ref<boolean[]>([]);
-const hintTooltip = ref('DICA');
+const hintMessage = ref('');
+const verificationFeedback = computed(() => hintMessage.value
+  || [verificationMessage.value, verificationError.value].filter(Boolean).join(' '));
 let verificationVersion = 0;
 
 watch(() => [
@@ -42,7 +44,7 @@ watch(() => [
   verificationMessage.value = '';
   verificationError.value = '';
   stepVerificationResults.value = [];
-  hintTooltip.value = 'DICA';
+  hintMessage.value = '';
 }, { deep: true, flush: 'sync' });
 
 function footerColorHelper(): string {
@@ -67,22 +69,23 @@ async function verifyTruthTable(requestHint = false) {
   if (isVerifying.value) return;
   verificationMessage.value = '';
   verificationError.value = '';
-  hintTooltip.value = 'DICA';
+  hintMessage.value = '';
   if (!automaticSimplification.value && simplificationStore.steps.length < 2) {
     verificationError.value = 
       'Adicione a expressão original e uma tentativa de simplificação.';
-    if (requestHint) hintTooltip.value = verificationError.value;
+    if (requestHint) hintMessage.value = verificationError.value;
     return;
   }
   const original = automaticSimplification.value
     ? simplificationStore.submittedExpression
     : simplificationStore.steps[0].value;
+  const lastStep = simplificationStore.steps[simplificationStore.steps.length - 1];
   const candidate = automaticSimplification.value
     ? simplificationStore.result
-    : simplificationStore.steps[simplificationStore.steps.length - 1].value;
+    : lastStep.value;
   if (!original.trim() || !candidate.trim()) {
     verificationError.value = 'Informe as duas expressões antes de verificar.';
-    if (requestHint) hintTooltip.value = verificationError.value;
+    if (requestHint) hintMessage.value = verificationError.value;
     return;
   }
 
@@ -110,9 +113,10 @@ async function verifyTruthTable(requestHint = false) {
     }
     if (version !== verificationVersion) return;
     if (!automaticSimplification.value) {
-      stepVerificationResults.value = simplificationStore.steps.map((_, index) =>
+      stepVerificationResults.value = simplificationStore.steps.map((step, index) =>
         (index === 0 || results[index - 1].equivalent)
-        && (index === validations.length || validations[index].law_valid),
+        && (index === validations.length
+          ? step.rule === 'final' : validations[index].law_valid),
       );
     }
     const firstIncorrectIndex = results.findIndex((result, index) =>
@@ -134,7 +138,13 @@ async function verifyTruthTable(requestHint = false) {
     if (!automaticSimplification.value && firstIncorrectIndex !== -1) {
       verificationError.value = `Passo ${firstIncorrectIndex + 1}: `
         + validations[firstIncorrectIndex].hint;
-      if (requestHint) hintTooltip.value = verificationError.value;
+      if (requestHint) hintMessage.value = verificationError.value;
+      return;
+    }
+    if (!automaticSimplification.value && lastStep.rule !== 'final') {
+      verificationError.value = `Passo ${simplificationStore.steps.length}: `
+        + 'Selecione a lei FINAL para concluir a simplificação.';
+      if (requestHint) hintMessage.value = verificationError.value;
       return;
     }
     if (result.equivalent) {
@@ -146,12 +156,12 @@ async function verifyTruthTable(requestHint = false) {
         if (completion.complete) {
           verificationMessage.value = 'Simplificação concluída. '
             + 'As expressões e as leis de todos os passos estão corretas.';
-          if (requestHint) hintTooltip.value = verificationMessage.value;
+          if (requestHint) hintMessage.value = verificationMessage.value;
         } else {
           verificationError.value = 'Tentativa incompleta: os passos adicionados '
             + 'estão corretos, mas a última expressão ainda pode ser simplificada.';
           if (requestHint) {
-            hintTooltip.value = completion.next_rule
+            hintMessage.value = completion.next_rule
               ? `Tentativa incompleta. Continue com a lei ${completion.next_rule}.`
               : verificationError.value;
           }
@@ -164,7 +174,7 @@ async function verifyTruthTable(requestHint = false) {
     if (version !== verificationVersion) return;
     verificationError.value = typeof error === 'string' ? error : error instanceof Error ?
       error.message : 'Não foi possível verificar as expressões.';
-    if (requestHint) hintTooltip.value = verificationError.value;
+    if (requestHint) hintMessage.value = verificationError.value;
   } finally {
     if (version === verificationVersion) isVerifying.value = false;
   }
@@ -203,7 +213,7 @@ async function verifyTruthTable(requestHint = false) {
             aria-label="Expressão booleana"
           >
         </label>
-        <div class="notation-control w-full">
+        <div class="notation-control min-w-0 flex-1">
           <button
             class="action-button self-stretch"
             :style="{ backgroundColor: configStore.getColor('action-button') }"
@@ -236,7 +246,16 @@ async function verifyTruthTable(requestHint = false) {
             refresh-button-tooltip="ALEATÓRIO"
           />
 
-          <div class="notation-control ml-auto">
+          <div class="notation-control verification-controls">
+            <p
+              v-if="verificationFeedback"
+              class="verification-feedback font-text"
+              :style="{ color: configStore.getColor('text') }"
+              :role="verificationError ? 'alert' : 'status'"
+              aria-atomic="true"
+            >
+              {{ verificationFeedback }}
+            </p>
             <button
               v-if="!automaticSimplification"
               class="action-button"
@@ -256,11 +275,9 @@ async function verifyTruthTable(requestHint = false) {
               <span
                 id="manual-hint-tooltip"
                 role="tooltip"
-                aria-live="polite"
-                class="tooltip hint-tooltip"
-                :class="{ 'hint-tooltip-visible': hintTooltip !== 'DICA' }"
+                class="tooltip"
                 :style="{ backgroundColor: configStore.getColor('base') }"
-              >{{ hintTooltip }}</span>
+              >DICA</span>
             </button>
 
             <button
@@ -310,26 +327,6 @@ async function verifyTruthTable(requestHint = false) {
           role="alert"
         >
           {{ simplificationStore.error }}
-        </p>
-        <p
-          v-if="verificationMessage"
-          :style="{
-            color: configStore.darkTheme ?
-              configStore.getColor('board') : configStore.getColor('background')
-          }"
-          role="status"
-        >
-          {{ verificationMessage }}
-        </p>
-        <p
-          v-if="verificationError"
-          :style="{
-            color: configStore.darkTheme ?
-              configStore.getColor('board') : configStore.getColor('background')
-          }"
-          role="alert"
-        >
-          {{ verificationError }}
         </p>
       </section>
       <section
@@ -471,7 +468,20 @@ select,
 }
 
 .notation-control {
-  @apply flex items-end gap-[13px] max-[760px]:w-full max-[760px]:flex-wrap max-[760px]:items-stretch;
+  @apply flex items-center gap-[13px] max-[760px]:w-full max-[760px]:flex-wrap max-[760px]:items-stretch;
+}
+
+.verification-controls {
+  @apply ml-auto min-w-0 flex-1 justify-end;
+}
+
+.verification-feedback {
+  @apply min-w-0 max-w-lg text-right text-[19px] leading-snug wrap-anywhere;
+  @apply max-[760px]:w-full max-[760px]:max-w-none max-[760px]:text-left;
+}
+
+.verification-controls .action-button {
+  @apply shrink-0;
 }
 
 .notation-field {
@@ -555,15 +565,6 @@ select,
 
 .tooltip-end {
   @apply left-auto right-0;
-}
-
-.hint-tooltip {
-  @apply top-full right-0 bottom-auto left-auto z-20 mt-2 whitespace-normal text-left;
-  width: min(32rem, calc(100vw - 3rem));
-}
-
-.hint-tooltip-visible {
-  @apply block;
 }
 
 .footer-tooltip {
