@@ -163,21 +163,17 @@ onMounted(async () => {
 
 <style scoped>
 @reference "../assets/main.css";
-
-:global(html), :global(body), :global(#app) { @apply min-h-full; }
 .truth-table-page { @apply box-border flex min-h-dvh flex-col m-0 bg-white p-0 font-roboto text-[#282d2d]; }
 .truth-table-workspace { @apply box-border flex min-h-0 min-w-0 flex-1 flex-col border-[1.5px] border-t-0 border-[#222] px-[30px] pt-[31px] pb-[28px]; }
 .table-controls, .control-actions { @apply flex items-end gap-[13px]; }
 .control-field { @apply flex flex-col gap-[6px]; }
 .control-field > span { @apply text-[19px] font-extrabold uppercase tracking-[.1px]; }
 input, select { @apply box-border h-[49px] rounded-[11px] border-[1.5px] border-[#222] font-roboto text-[20px] outline-none; }
-input:focus-visible, select:focus-visible, button:focus-visible { @apply outline-[3px] outline-offset-2; }
+input:focus-visible, select:focus-visible { @apply outline-[3px] outline-offset-2; }
 .expression-control input { @apply w-[308px] px-[13px]; }
 .display-control { @apply relative; }
 .display-control::after { @apply pointer-events-none absolute right-[10px] bottom-[17px] h-0 w-0 border-x-[5px] border-t-[9px] border-x-transparent border-t-[#222]; content: ''; }
 .display-control select { @apply w-[150px] appearance-none py-0 pr-6 pl-2 uppercase; }
-.action-button { @apply relative grid size-12 cursor-pointer place-items-center rounded-[11px] border-[1.5px] border-[#222]; }
-.action-button:hover { @apply -translate-y-px brightness-[.96]; }
 .truth-table-card { @apply mt-[13px] box-border min-h-[768px] min-w-0 flex-1 overflow-hidden rounded-[23px] border-[1.5px] px-[30px] pt-[28px] pb-[60px]; }
 .table-scroll { @apply overflow-x-auto; }
 table { @apply w-full border-separate border-spacing-0 rounded-[23px] border-[1.5px] border-[#222] text-center text-[42px] leading-none; }
@@ -189,14 +185,6 @@ tbody tr:last-child td:first-child { @apply rounded-bl-[23px]; }
 tbody tr:last-child td:last-child { @apply rounded-br-[23px]; }
 th:first-child { @apply rounded-tl-[23px]; }
 th:last-child { @apply rounded-tr-[23px]; }
-.action-button:hover .tooltip,
-.action-button:focus-visible .tooltip {
-  @apply block;
-}
-.tooltip { 
-  @apply absolute hidden whitespace-nowrap rounded px-[6px] py-1 font-sans text-[12px] leading-normal 
-  font-black text-white -bottom-[31px] -left-3; 
-}
 
 @media (max-width: 760px) {
   .truth-table-workspace { @apply px-[14px] py-6; }

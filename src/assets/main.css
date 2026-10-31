@@ -10,8 +10,62 @@
   --font-inter: "Inter", "Arial", "Helvetica", "sans-serif";
 }
 
+html,
+body,
+#app {
+  @apply min-h-full;
+}
+
 body {
   padding: 0px;
   margin: 0px;
   box-sizing: border-box;
+}
+
+.action-button {
+  @apply relative flex h-[45px] w-[45px] shrink-0 items-center justify-center;
+  @apply rounded-[10px] border-[1.5px] p-0 text-[27px] leading-none font-bold;
+  @apply hover:-translate-y-px hover:brightness-[.96] cursor-pointer;
+  @apply focus-visible:outline-2 focus-visible:outline-offset-2;
+}
+
+.tooltip,
+.footer-tooltip {
+  @apply absolute hidden whitespace-nowrap rounded px-[6px] py-1;
+  @apply font-sans text-[12px] leading-normal font-black text-white;
+}
+
+.tooltip {
+  @apply -bottom-[31px] -left-3;
+}
+
+.footer-tooltip {
+  @apply bottom-full right-0 mb-[5px];
+}
+
+.action-button:hover .tooltip,
+.action-button:focus-visible .tooltip,
+.action-button:hover .footer-tooltip,
+.action-button:focus-visible .footer-tooltip,
+.copy-button:hover .tooltip,
+.copy-button:focus-visible .tooltip,
+.icon-button:hover .tooltip,
+.icon-button:focus-visible .tooltip {
+  @apply block;
+}
+
+.form-input {
+  @apply box-border h-[45px] rounded-[10px] border-[1.5px] border-[#242424];
+  @apply px-[13px] text-[18px] leading-[1.2] text-[#242424] outline-none;
+  @apply focus:outline-2 focus:outline-offset-2;
+}
+
+.form-input::placeholder {
+  color: var(--placeholder-color);
+}
+
+.steps-card {
+  @apply min-h-0 flex-1 overflow-x-hidden overflow-y-auto box-border;
+  @apply rounded-[23px] border-[1.5px] border-[#242424] px-8;
+  @apply max-[760px]:px-[18px];
 }

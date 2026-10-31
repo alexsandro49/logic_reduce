@@ -214,13 +214,14 @@ async function verifyTruthTable(requestHint = false) {
       aria-label="Simplificação de expressão booleana"
     >
       <div class="controls-row">
-        <label class="field expression-field">
+        <label class="expression-field">
           <span
             class="font-text"
             :style="{ color: configStore.getColor('text') }"
           >Expressão booleana:</span>
           <input
             v-model="simplificationStore.expression"
+            class="form-input"
             placeholder="~((~A + B) & (~B + C))"
             :style="{
               backgroundColor: configStore.getColor('input'),
@@ -361,7 +362,7 @@ async function verifyTruthTable(requestHint = false) {
           Forma simplificada:
         </h2>
         <output
-          class="result-value"
+          class="form-input result-value"
           :style="{ backgroundColor: configStore.getColor('board') }"
         >{{
           simplificationStore.result }}</output>
@@ -446,12 +447,6 @@ async function verifyTruthTable(requestHint = false) {
 <style scoped>
 @reference "../assets/main.css";
 
-:global(html),
-:global(body),
-:global(#app) {
-  @apply h-full overflow-hidden;
-}
-
 .page-shell {
   @apply relative flex h-dvh max-h-dvh min-h-0 flex-col overflow-hidden box-border rounded-b-[20px] bg-white font-roboto text-[#242424] max-[760px]:px-3.5;
 }
@@ -475,24 +470,14 @@ async function verifyTruthTable(requestHint = false) {
   @apply max-[760px]:grid-rows-[28px_45px_45px_minmax(0,1fr)];
 }
 
-.field {
-  @apply flex flex-col gap-[7px];
-}
-
-.field>span,
+.expression-field > span,
 .steps-section h1,
 .result-row h2 {
   @apply text-[19px] tracking-[.1px] uppercase;
 }
 
-input,
-select,
-.result-value {
-  @apply box-border h-[45px] rounded-[10px] border-[1.5px] border-[#242424] px-[13px] text-[18px] leading-[1.2] text-[#242424] outline-none focus:outline-2 focus:outline-offset-2;
-}
-
 .expression-field {
-  @apply row-span-2 grid min-w-0 grid-rows-subgrid items-center self-stretch;
+  @apply row-span-2 grid min-w-0 grid-rows-subgrid items-center self-stretch gap-[7px];
 }
 
 .expression-field input {
@@ -502,10 +487,6 @@ select,
 .action-controls {
   @apply col-start-2 row-start-2 flex items-center gap-[13px];
   @apply max-[760px]:col-start-1 max-[760px]:row-start-3;
-}
-
-.action-controls :deep(.action-button) {
-  @apply shrink-0;
 }
 
 .verification-controls {
@@ -523,35 +504,6 @@ select,
   @apply max-[760px]:max-h-[calc(100%_-_58px)];
 }
 
-.verification-controls .action-button {
-  @apply shrink-0;
-}
-
-.notation-field {
-  @apply relative max-[760px]:flex-1 after:pointer-events-none after:absolute after:right-[14px] after:bottom-[18px] after:border-x-[5px] after:border-t-[7px] after:border-x-transparent after:border-t-[#242424];
-}
-
-.notation-field select {
-  @apply w-41 appearance-none pr-10 text-[#242424] disabled:opacity-100 max-[760px]:w-full;
-}
-
-.notation-field select option {
-  @apply text-[#242424];
-}
-
-.action-button {
-  @apply relative;
-}
-
-.action-button,
-.page-footer button {
-  @apply flex h-[45px] w-[45px] items-center justify-center rounded-[10px] border-[1.5px] p-0 text-[27px] leading-none font-bold hover:-translate-y-px hover:brightness-[.96] focus-visible:outline-2 focus-visible:outline-offset-2 cursor-pointer;
-}
-
-.action-button-img {
-  @apply w-7 h-7
-}
-
 .ufal-button-img {
   @apply w-10 h-10 cursor-pointer
 }
@@ -562,23 +514,6 @@ select,
 
 .steps-section {
   @apply grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden;
-}
-
-.step h2 {
-  @apply mb-[6px] text-4xl leading-[1.25] max-[760px]:text-[22px];
-}
-
-.step-expression,
-.step-description {
-  @apply mb-4 text-3xl leading-[1.45] max-[760px]:text-[14px] max-[760px]:[overflow-wrap:anywhere];
-}
-
-.step-expression {
-  @apply font-inter;
-}
-
-.step-description {
-  @apply ml-3;
 }
 
 .bottom-row {
@@ -603,30 +538,8 @@ select,
   @apply relative flex h-7 w-[25px] items-center justify-center border-0 bg-transparent p-0 text-[22px] hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 cursor-pointer;
 }
 
-.tooltip,
-.footer-tooltip {
-  @apply absolute hidden whitespace-nowrap rounded px-[6px] py-1 font-sans text-[12px] leading-normal font-black text-white;
-}
-
-.tooltip {
-  @apply -bottom-[31px] -left-3;
-}
-
 .tooltip-end {
   @apply left-auto right-0;
-}
-
-.footer-tooltip {
-  @apply bottom-full right-0 mb-[5px];
-}
-
-.copy-button:hover .tooltip,
-.copy-button:focus-visible .tooltip,
-.action-button:hover .tooltip,
-.action-button:focus-visible .tooltip,
-.action-button:hover .footer-tooltip,
-.action-button:focus-visible .footer-tooltip {
-  @apply block;
 }
 
 .page-footer {
@@ -642,21 +555,5 @@ select,
 
 .page-footer button {
   @apply w-[59px];
-}
-
-input::placeholder {
-  color: var(--placeholder-color);
-}
-
-.hide-scrollbar {
-  scrollbar-width: none;
-  /* Firefox */
-  -ms-overflow-style: none;
-  /* IE 10+ */
-}
-
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-  /* Chrome, Safari, Opera */
 }
 </style>

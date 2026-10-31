@@ -158,12 +158,6 @@ function sidebarColorHelper(rule: Rule) {
 <style scoped>
 @reference "../assets/main.css";
 
-:global(html),
-:global(body),
-:global(#app) {
-  @apply min-h-full;
-}
-
 .manual-page {
   @apply min-h-dvh overflow-hidden;
 }

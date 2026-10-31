@@ -138,18 +138,8 @@ function buttonColorHelper(value: number) {
   @apply flex relative h-[44px] w-[45px] cursor-pointer items-center justify-center rounded-[11px] p-0;
 }
 
-.icon-button img {
-  @apply h-[26px] w-[24px] fill-[#222] stroke-[#222] stroke-[1.8] [stroke-linecap:round] [stroke-linejoin:round];
-}
-
-.icon-button:hover .tooltip,
-.icon-button:focus-visible .tooltip {
-  @apply block;
-}
-
-.tooltip { 
-  @apply absolute hidden whitespace-nowrap rounded px-[6px] py-1 font-sans text-[12px] leading-normal 
-  font-black text-white -bottom-[31px] right-0; 
+.tooltip {
+  @apply left-auto right-0;
 }
 
 @media (max-width: 680px) {
