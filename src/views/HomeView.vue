@@ -30,7 +30,7 @@ const verificationError = ref('');
 const stepVerificationResults = ref<boolean[]>([]);
 const hintMessage = ref('');
 const verificationFeedback = computed(() => hintMessage.value
-  || [verificationMessage.value, verificationError.value].filter(Boolean).join(' '));
+  || verificationError.value || verificationMessage.value);
 let verificationVersion = 0;
 
 watch(() => [
@@ -65,15 +65,29 @@ function automaticSimplificationHelper() {
   automaticSimplification.value = !automaticSimplification.value;
 }
 
+async function checkExpression() {
+  if (isVerifying.value || simplificationStore.isSimplifying) return;
+  if (automaticSimplification.value) {
+    await simplificationStore.simplification();
+    if (simplificationStore.error) {
+      verificationError.value = 'Não foi possível simplificar a expressão.';
+      return;
+    }
+  }
+  await verifyTruthTable();
+}
+
 async function verifyTruthTable(requestHint = false) {
   if (isVerifying.value) return;
   verificationMessage.value = '';
   verificationError.value = '';
   hintMessage.value = '';
   if (!automaticSimplification.value && simplificationStore.steps.length < 2) {
-    verificationError.value = 
-      'Adicione a expressão original e uma tentativa de simplificação.';
-    if (requestHint) hintMessage.value = verificationError.value;
+    verificationError.value = 'Passos insuficientes.';
+    if (requestHint) {
+      hintMessage.value =
+        'Adicione a expressão original e uma tentativa de simplificação.';
+    }
     return;
   }
   const original = automaticSimplification.value
@@ -84,8 +98,8 @@ async function verifyTruthTable(requestHint = false) {
     ? simplificationStore.result
     : lastStep.value;
   if (!original.trim() || !candidate.trim()) {
-    verificationError.value = 'Informe as duas expressões antes de verificar.';
-    if (requestHint) hintMessage.value = verificationError.value;
+    verificationError.value = 'Há expressões vazias.';
+    if (requestHint) hintMessage.value = 'Informe as duas expressões antes de verificar.';
     return;
   }
 
@@ -126,25 +140,25 @@ async function verifyTruthTable(requestHint = false) {
     const resultIndex = firstIncorrectIndex === -1
       ? results.length - 1 : firstIncorrectIndex;
     const result = results[resultIndex];
-    if (!result.equivalent && result.counterexample) {
-      const example = result.counterexample;
-      const inputs = Object.entries(example.inputs)
-        .map(([name, value]) => `${name} = ${Number(value)}`).join(', ');
-      verificationMessage.value = 'As expressões não são equivalentes. '
-        + (inputs ? `Para ${inputs}: ` : '')
-        + `original = ${Number(example.original)}, `
-        + `tentativa = ${Number(example.candidate)}.`;
+    if (!result.equivalent) {
+      verificationError.value = 'As expressões não são equivalentes.';
     }
     if (!automaticSimplification.value && firstIncorrectIndex !== -1) {
-      verificationError.value = `Passo ${firstIncorrectIndex + 1}: `
-        + validations[firstIncorrectIndex].hint;
-      if (requestHint) hintMessage.value = verificationError.value;
+      const stepLabel = `Passo ${firstIncorrectIndex + 1}: `;
+      verificationError.value = stepLabel + (result.equivalent
+        ? 'lei incorreta.' : 'expressão incorreta.');
+      if (requestHint) {
+        hintMessage.value = stepLabel + validations[firstIncorrectIndex].hint;
+      }
       return;
     }
     if (!automaticSimplification.value && lastStep.rule !== 'final') {
       verificationError.value = `Passo ${simplificationStore.steps.length}: `
-        + 'Selecione a lei FINAL para concluir a simplificação.';
-      if (requestHint) hintMessage.value = verificationError.value;
+        + 'conclusão pendente.';
+      if (requestHint) {
+        hintMessage.value = `Passo ${simplificationStore.steps.length}: `
+          + 'Selecione a lei FINAL para concluir a simplificação.';
+      }
       return;
     }
     if (result.equivalent) {
@@ -154,16 +168,18 @@ async function verifyTruthTable(requestHint = false) {
         });
         if (version !== verificationVersion) return;
         if (completion.complete) {
-          verificationMessage.value = 'Simplificação concluída. '
-            + 'As expressões e as leis de todos os passos estão corretas.';
-          if (requestHint) hintMessage.value = verificationMessage.value;
+          verificationMessage.value = 'Simplificação concluída.';
+          if (requestHint) {
+            hintMessage.value = 'Simplificação concluída. '
+              + 'As expressões e as leis de todos os passos estão corretas.';
+          }
         } else {
-          verificationError.value = 'Tentativa incompleta: os passos adicionados '
-            + 'estão corretos, mas a última expressão ainda pode ser simplificada.';
+          verificationError.value = 'Simplificação incompleta.';
           if (requestHint) {
             hintMessage.value = completion.next_rule
               ? `Tentativa incompleta. Continue com a lei ${completion.next_rule}.`
-              : verificationError.value;
+              : 'Os passos estão corretos, '
+                + 'mas a última expressão ainda pode ser simplificada.';
           }
         }
       } else {
@@ -172,9 +188,11 @@ async function verifyTruthTable(requestHint = false) {
     }
   } catch (error) {
     if (version !== verificationVersion) return;
-    verificationError.value = typeof error === 'string' ? error : error instanceof Error ?
-      error.message : 'Não foi possível verificar as expressões.';
-    if (requestHint) hintMessage.value = verificationError.value;
+    verificationError.value = 'Não foi possível verificar as expressões.';
+    if (requestHint) {
+      hintMessage.value = typeof error === 'string' ? error : error instanceof Error
+        ? error.message : verificationError.value;
+    }
   } finally {
     if (version === verificationVersion) isVerifying.value = false;
   }
@@ -185,14 +203,14 @@ async function verifyTruthTable(requestHint = false) {
   <main
     class="page-shell"
     :class="{ dark: configStore.darkTheme }"
+    :style="{
+      backgroundColor: configStore.darkTheme ?
+        configStore.getColor('background') : '#FFFFFF'
+    }"
   >
     <HeaderComponent :active-window-button="0" />
     <section
       class="workspace"
-      :style="{
-        backgroundColor: configStore.darkTheme ?
-          configStore.getColor('background') : '#FFFFFF'
-      }"
       aria-label="Simplificação de expressão booleana"
     >
       <div class="controls-row">
@@ -213,9 +231,9 @@ async function verifyTruthTable(requestHint = false) {
             aria-label="Expressão booleana"
           >
         </label>
-        <div class="notation-control min-w-0 flex-1">
+        <div class="action-controls">
           <button
-            class="action-button self-stretch"
+            class="action-button"
             :style="{ backgroundColor: configStore.getColor('action-button') }"
             type="button"
             @click="simplificationStore.addStep"
@@ -234,8 +252,7 @@ async function verifyTruthTable(requestHint = false) {
           </button>
 
           <ActionButtons
-            @check-button="() => automaticSimplification ? 
-              simplificationStore.simplification() : verifyTruthTable()"
+            @check-button="checkExpression"
             @trash-button="simplificationStore.clearData"
             @refresh-button="simplificationStore.randomExpressionHelper"
             check-button-label="Simplificar expressão"
@@ -245,63 +262,64 @@ async function verifyTruthTable(requestHint = false) {
             trash-button-tooltip="LIMPAR"
             refresh-button-tooltip="ALEATÓRIO"
           />
+        </div>
 
-          <div class="notation-control verification-controls">
-            <p
-              v-if="verificationFeedback"
-              class="verification-feedback font-text"
-              :style="{ color: configStore.getColor('text') }"
-              :role="verificationError ? 'alert' : 'status'"
-              aria-atomic="true"
-            >
-              {{ verificationFeedback }}
-            </p>
-            <button
-              v-if="!automaticSimplification"
-              class="action-button"
-              :style="{ backgroundColor: configStore.getColor('action-button') }"
-              type="button"
-              aria-label="Mostrar dica para a simplificação manual"
-              aria-describedby="manual-hint-tooltip"
-              :disabled="isVerifying || simplificationStore.isSimplifying"
-              :aria-busy="isVerifying"
-              @click="verifyTruthTable(true)"
-            >
-              <PhLightbulbFilament
-                :size="32"
-                :color="configStore.getColor('icon-color')"
-                weight="fill"
-              />
-              <span
-                id="manual-hint-tooltip"
-                role="tooltip"
-                class="tooltip"
-                :style="{ backgroundColor: configStore.getColor('base') }"
-              >DICA</span>
-            </button>
+        <div class="verification-controls">
+          <p
+            v-if="verificationFeedback"
+            class="verification-feedback font-text"
+            :style="{ color: configStore.getColor('text') }"
+            :role="verificationError ? 'alert' : 'status'"
+            aria-atomic="true"
+            tabindex="0"
+          >
+            {{ verificationFeedback }}
+          </p>
+          <button
+            v-if="!automaticSimplification"
+            class="action-button"
+            :style="{ backgroundColor: configStore.getColor('action-button') }"
+            type="button"
+            aria-label="Mostrar dica para a simplificação manual"
+            aria-describedby="manual-hint-tooltip"
+            :disabled="isVerifying || simplificationStore.isSimplifying"
+            :aria-busy="isVerifying"
+            @click="verifyTruthTable(true)"
+          >
+            <PhLightbulbFilament
+              :size="32"
+              :color="configStore.getColor('icon-color')"
+              weight="fill"
+            />
+            <span
+              id="manual-hint-tooltip"
+              role="tooltip"
+              class="tooltip"
+              :style="{ backgroundColor: configStore.getColor('base') }"
+            >DICA</span>
+          </button>
 
-            <button
-              class="action-button"
-              :style="{
-                backgroundColor: automaticSimplification ?
-                  configStore.getColor('board') : configStore.getColor('action-button')
-              }"
-              type="button"
-              @click="automaticSimplificationHelper"
-              aria-label="Adicionar passo"
-            >
-              <PhEye
-                :size="32"
-                :color="configStore.getColor('icon-color')"
-                weight="fill"
-              />
-              <span
-                class="tooltip tooltip-end"
-                :style="{ backgroundColor: configStore.getColor('base') }"
-              >SIMPLIFICAÇÃO
-                AUTOMÁTICA</span>
-            </button>
-          </div>
+          <button
+            class="action-button"
+            :style="{
+              backgroundColor: automaticSimplification ?
+                configStore.getColor('board') : configStore.getColor('action-button')
+            }"
+            type="button"
+            @click="automaticSimplificationHelper"
+            aria-label="Adicionar passo"
+          >
+            <PhEye
+              :size="32"
+              :color="configStore.getColor('icon-color')"
+              weight="fill"
+            />
+            <span
+              class="tooltip tooltip-end"
+              :style="{ backgroundColor: configStore.getColor('base') }"
+            >SIMPLIFICAÇÃO
+              AUTOMÁTICA</span>
+          </button>
         </div>
       </div>
       <section
@@ -329,9 +347,12 @@ async function verifyTruthTable(requestHint = false) {
           {{ simplificationStore.error }}
         </p>
       </section>
+    </section>
+    <div class="bottom-row">
       <section
         class="result-row"
         aria-label="Resultado simplificado"
+        v-if="automaticSimplification"
       >
         <h2
           class="font-text"
@@ -362,63 +383,63 @@ async function verifyTruthTable(requestHint = false) {
           >{{ copyButtonTittle }}</span>
         </button>
       </section>
-    </section>
-    <footer
-      class="page-footer"
-      :style="{ borderColor: footerColorHelper() }"
-    >
-      <strong :style="{ color: footerColorHelper() }">2026</strong>
-      <button
-        class="action-button"
-        :style="{ backgroundColor: configStore.getColor('footer-buttons-background') }"
-        type="button"
-        aria-label="Alternar tema"
+      <footer
+        class="page-footer"
+        :style="{ borderColor: footerColorHelper() }"
       >
-        <img
-          :src="ufalIcon"
-          class="ufal-button-img"
-          alt="Moon icon"
-          aria-hidden="true"
+        <strong :style="{ color: footerColorHelper() }">2026</strong>
+        <button
+          class="action-button"
+          :style="{ backgroundColor: configStore.getColor('footer-buttons-background') }"
+          type="button"
+          aria-label="Alternar tema"
         >
-        <span
-          class="footer-tooltip"
-          :style="{ backgroundColor: configStore.getColor('base') }"
-        >UFAL</span>
-      </button>
-      <button
-        class="action-button"
-        :style="{ backgroundColor: configStore.getColor('footer-buttons-background') }"
-        type="button"
-        aria-label="Alternar tema"
-      >
-        <PhBook
-          :size="32"
-          :color="configStore.getColor('footer-buttons-color')"
-          weight="fill"
-        />
-        <span
-          class="footer-tooltip"
-          :style="{ backgroundColor: configStore.getColor('base') }"
-        >TRABALHO
-          RELACIONADO</span>
-      </button>
-      <button
-        class="action-button"
-        :style="{ backgroundColor: configStore.getColor('footer-buttons-background') }"
-        type="button"
-        aria-label="Alternar tema"
-      >
-        <PhGithubLogo
-          :size="32"
-          :color="configStore.getColor('footer-buttons-color')"
-          weight="fill"
-        />
-        <span
-          class="footer-tooltip"
-          :style="{ backgroundColor: configStore.getColor('base') }"
-        >REPOSITÓRIO</span>
-      </button>
-    </footer>
+          <img
+            :src="ufalIcon"
+            class="ufal-button-img"
+            alt="Moon icon"
+            aria-hidden="true"
+          >
+          <span
+            class="footer-tooltip"
+            :style="{ backgroundColor: configStore.getColor('base') }"
+          >UFAL</span>
+        </button>
+        <button
+          class="action-button"
+          :style="{ backgroundColor: configStore.getColor('footer-buttons-background') }"
+          type="button"
+          aria-label="Alternar tema"
+        >
+          <PhBook
+            :size="32"
+            :color="configStore.getColor('footer-buttons-color')"
+            weight="fill"
+          />
+          <span
+            class="footer-tooltip"
+            :style="{ backgroundColor: configStore.getColor('base') }"
+          >TRABALHO
+            RELACIONADO</span>
+        </button>
+        <button
+          class="action-button"
+          :style="{ backgroundColor: configStore.getColor('footer-buttons-background') }"
+          type="button"
+          aria-label="Alternar tema"
+        >
+          <PhGithubLogo
+            :size="32"
+            :color="configStore.getColor('footer-buttons-color')"
+            weight="fill"
+          />
+          <span
+            class="footer-tooltip"
+            :style="{ backgroundColor: configStore.getColor('base') }"
+          >REPOSITÓRIO</span>
+        </button>
+      </footer>
+    </div>
   </main>
 </template>
 
@@ -440,11 +461,18 @@ async function verifyTruthTable(requestHint = false) {
 }
 
 .workspace {
-  @apply flex px-8 min-h-0 flex-1 flex-col pt-[43px] pb-[97px] max-[760px]:pt-7;
+  @apply grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] gap-7 px-8;
+  @apply pt-[43px] pb-7 max-[760px]:pt-7;
 }
 
 .controls-row {
-  @apply flex shrink-0 items-end gap-3.5 max-[760px]:flex-wrap max-[760px]:items-stretch;
+  @apply grid h-[120px] shrink-0 grid-cols-[367px_auto_minmax(0,1fr)];
+  @apply grid-rows-[28px_minmax(0,1fr)];
+  @apply items-center gap-x-3.5 gap-y-[7px];
+  @apply max-[1100px]:h-[168px] max-[1100px]:grid-cols-[minmax(0,1fr)_auto];
+  @apply max-[1100px]:grid-rows-[28px_45px_minmax(0,1fr)];
+  @apply max-[760px]:h-[264px] max-[760px]:grid-cols-1;
+  @apply max-[760px]:grid-rows-[28px_45px_45px_minmax(0,1fr)];
 }
 
 .field {
@@ -464,20 +492,35 @@ select,
 }
 
 .expression-field {
-  @apply w-[367px] max-[760px]:w-full;
+  @apply row-span-2 grid min-w-0 grid-rows-subgrid items-center self-stretch;
 }
 
-.notation-control {
-  @apply flex items-center gap-[13px] max-[760px]:w-full max-[760px]:flex-wrap max-[760px]:items-stretch;
+.expression-field input {
+  @apply min-w-0 w-full;
+}
+
+.action-controls {
+  @apply col-start-2 row-start-2 flex items-center gap-[13px];
+  @apply max-[760px]:col-start-1 max-[760px]:row-start-3;
+}
+
+.action-controls :deep(.action-button) {
+  @apply shrink-0;
 }
 
 .verification-controls {
-  @apply ml-auto min-w-0 flex-1 justify-end;
+  @apply col-start-3 row-start-2 flex h-full min-h-0 min-w-0;
+  @apply items-center justify-end gap-[13px];
+  @apply max-[1100px]:col-span-full max-[1100px]:col-start-1;
+  @apply max-[1100px]:row-start-3 max-[760px]:row-start-4 max-[760px]:flex-wrap;
+  @apply max-[760px]:content-center;
 }
 
 .verification-feedback {
-  @apply min-w-0 max-w-lg text-right text-[19px] leading-snug wrap-anywhere;
-  @apply max-[760px]:w-full max-[760px]:max-w-none max-[760px]:text-left;
+  @apply min-h-0 max-h-full min-w-0 max-w-lg flex-1 overflow-y-auto;
+  @apply text-right text-[19px] leading-snug wrap-anywhere;
+  @apply max-[760px]:basis-full max-[760px]:max-w-none max-[760px]:text-left;
+  @apply max-[760px]:max-h-[calc(100%_-_58px)];
 }
 
 .verification-controls .action-button {
@@ -518,7 +561,7 @@ select,
 }
 
 .steps-section {
-  @apply mt-7 flex min-h-0 flex-1 flex-col;
+  @apply grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden;
 }
 
 .step h2 {
@@ -538,8 +581,14 @@ select,
   @apply ml-3;
 }
 
+.bottom-row {
+  @apply grid min-h-[72px] shrink-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-7;
+  @apply max-[1100px]:grid-cols-1 max-[1100px]:gap-0;
+}
+
 .result-row {
-  @apply mt-7 flex shrink-0 items-center gap-[7px] max-[760px]:flex-wrap max-[760px]:items-start;
+  @apply flex min-w-0 flex-wrap items-center gap-[7px] pl-8;
+  @apply max-[1100px]:min-h-[72px] max-[1100px]:px-8;
 }
 
 .result-row h2 {
@@ -547,7 +596,7 @@ select,
 }
 
 .result-value {
-  @apply flex h-[31px] min-w-[192px] items-center text-[13px];
+  @apply flex h-[31px] min-w-[192px] max-w-full items-center overflow-x-auto text-[13px];
 }
 
 .copy-button {
@@ -581,7 +630,10 @@ select,
 }
 
 .page-footer {
-  @apply absolute -right-px -bottom-px flex min-h-[72px] items-center gap-7 rounded-tl-[19px] rounded-br-[19px] border-[1.5px] border-r-0 border-b-0 py-0 pr-[27px] pl-4 max-[760px]:gap-2.5 max-[760px]:px-3;
+  @apply col-start-2 flex min-h-[72px] items-center justify-self-end gap-7;
+  @apply rounded-tl-[19px] rounded-br-[19px] border-[1.5px] border-r-0 border-b-0;
+  @apply py-0 pr-[27px] pl-4 max-[1100px]:col-start-1;
+  @apply max-[760px]:gap-2.5 max-[760px]:px-3;
 }
 
 .page-footer strong {
