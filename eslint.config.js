@@ -34,6 +34,15 @@ export default defineConfig([
         'ignoreRegExpLiterals': false,
         'ignoreHTMLAttributeValues': false,
         'ignoreHTMLTextContents': false,
+      }],
+      'vue/max-attributes-per-line': ['error', {
+        'singleline': {
+          'max': 2
+        },
+        'multiline': {
+          'max': 2
+        }
       }]
-    }}
+    }
+  }
 ]);

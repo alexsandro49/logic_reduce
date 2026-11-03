@@ -7,7 +7,7 @@ const configStore = useConfigStore();
 const simplificationStore = useSimplificationStore();
 
 const props = defineProps<{
-    verificationResults: boolean[];
+  verificationResults: boolean[];
 }>();
 
 const rules = [
@@ -33,20 +33,26 @@ function stepColorBackgroundHelper(index: number) {
     return 'error';
   }
 }
+
+function selectColorBackgroundHelper(index: number) {
+  if (props.verificationResults[index] === undefined) {
+    return 'board';
+  } else if (props.verificationResults[index] === true) {
+    return 'action-button';
+  } else {
+    return 'error';
+  }
+}
 </script>
 
 <template>
-  <div
-    class="steps-card py-3"
-    :style="{ backgroundColor: configStore.getColor('board') }"
-  >
+  <div class="steps-card py-3" :style="{backgroundColor: configStore.getColor('board')}">
     <article
-      v-for="(step, index) in simplificationStore.steps"
-      :key="index"
-      class="step flex w-full justify-between h-12 mb-5 hover:bg-(--cor-hover)
-      hover:text-white group"
+      v-for="(step, index) in simplificationStore.steps" :key="index"
+      class="step
+      flex w-full justify-between h-12 mb-5 hover:bg-(--hightlight-hover) group"
       :style="{
-        '--cor-hover': configStore.getColor('base'),
+        '--hightlight-hover': configStore.getColor('base'),
         '--rule-background': configStore.getColor('board'),
 
         '--step-feedback-background':
@@ -54,65 +60,58 @@ function stepColorBackgroundHelper(index: number) {
         '--step-feedback-text': configStore.getColor('background'),
         '--step-feedback-border': configStore.getColor(
           verificationResults[index] === undefined ? 'transparent' : 'background'),
+
+        '--input-hover': configStore.getColor('board')
       }"
     >
       <div class="flex items-center gap-4">
         <h2
-          class="text-(--step-feedback-text"
-          :class="{'group-hover:text-(--step-feedback-text)':
-            verificationResults[index] !== undefined}"
+          class="text-(--step-feedback-text) group-hover:text-white" :class="{
+            'group-hover:text-(--step-feedback-text)':
+              verificationResults[index] !== undefined
+          }"
         >
           {{ index + 1 }}.
-          <span
-            v-if="verificationResults[index] !== undefined"
-            class="sr-only"
-          >
+          <span v-if="verificationResults[index] !== undefined" class="sr-only">
             {{ verificationResults[index] ? 'Passo válido'
               : 'Passo com erro na expressão ou na lei selecionada' }}
           </span>
         </h2>
-        <input
-          v-model="step.value"
-          :style="{ '--input-hover': configStore.getColor('board') }"
-          class="form-input group-hover:bg-(--input-hover)"
-        >
+        <input v-model="step.value" class="form-input group-hover:bg-(--input-hover)">
       </div>
 
       <div class="flex items-center gap-3">
         <button
-          class="action-button"
-          :style="{ backgroundColor: configStore.getColor('action-button') }"
+          class="action-button group-hover:bg-(--rule-background) 
+          hover:bg-(--remove-hover)"
+          :style="{'--remove-hover': configStore.getColor('error')}"
           type="button"
-          @click="simplificationStore.removeStep(index)"
-          aria-label="Adicionar passo"
+          @click="simplificationStore.removeStep(index)" aria-label="Adicionar passo"
         >
           <PhX
-            :size="32"
-            :color="configStore.getColor('icon-color')"
+            :size="32" :color="configStore.getColor('icon-color')"
             weight="bold"
           />
-          <span
-            class="tooltip"
-            :style="{ backgroundColor: configStore.getColor('base') }"
+          <span 
+            class="tooltip" :style="{ backgroundColor: configStore.getColor('base') }"
           >REMOVER</span>
         </button>
         <div class="rule-control">
           <select
-            v-model="step.rule"
-            class="form-input"
+            v-model="step.rule" class="form-input group-hover:bg-(--select-hover)"
+            :style="{
+              '--select-hover': configStore.getColor(selectColorBackgroundHelper(index))}"
             aria-label="Lei aplicada para obter o próximo passo"
           >
             <option
-              v-for="notationOption in rules"
-              :value="notationOption.value"
+              v-for="notationOption in rules" :value="notationOption.value"
               :key="notationOption.value"
             >
               {{ notationOption.text }}
             </option>
           </select>
           <PhCaretDown
-            class="rule-caret"
-            :size="16"
+            class="rule-caret" :size="16"
             aria-hidden="true"
           />
         </div>
@@ -128,9 +127,11 @@ function stepColorBackgroundHelper(index: number) {
   @apply relative;
 }
 
-.rule-control select {
-  @apply appearance-none bg-none pr-9;
-  background-color: var(--step-feedback-background, var(--rule-background));
+@layer components {
+  .rule-control select {
+    @apply appearance-none bg-none pr-9;
+    background-color: var(--step-feedback-background, var(--rule-background));
+  }
 }
 
 .rule-caret {
