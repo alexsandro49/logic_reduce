@@ -274,7 +274,7 @@ async function verifyTruthTable(requestHint = false) {
             aria-atomic="true"
             tabindex="0"
           >
-            {{ verificationFeedback }}
+            {{ verificationFeedback.toUpperCase() }}
           </p>
           <button
             v-if="!automaticSimplification"

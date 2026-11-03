@@ -47,44 +47,49 @@ function selectColorBackgroundHelper(index: number) {
 
 <template>
   <div class="steps-card py-3" :style="{backgroundColor: configStore.getColor('board')}">
+    <div class="steps-header" aria-hidden="true">
+      <span class="step-number-heading"><span>#</span></span>
+      <span>Passo</span>
+      <span class="col-start-4 justify-self-center">Remover</span>
+      <span>Identidade</span>
+    </div>
+
     <article
       v-for="(step, index) in simplificationStore.steps" :key="index"
       class="step
-      flex w-full justify-between h-12 mb-5 hover:bg-(--hightlight-hover) group"
+      w-full h-12 mb-5 hover:bg-(--hightlight-hover) group"
       :style="{
         '--hightlight-hover': configStore.getColor('base'),
         '--rule-background': configStore.getColor('board'),
 
         '--step-feedback-background':
           configStore.getColor(stepColorBackgroundHelper(index)),
-        '--step-feedback-text': configStore.getColor('background'),
         '--step-feedback-border': configStore.getColor(
           verificationResults[index] === undefined ? 'transparent' : 'background'),
 
         '--input-hover': configStore.getColor('board')
       }"
     >
-      <div class="flex items-center gap-4">
-        <h2
-          class="text-(--step-feedback-text) group-hover:text-white" :class="{
-            'group-hover:text-(--step-feedback-text)':
-              verificationResults[index] !== undefined
-          }"
-        >
+      <div class="contents">
+        <h2 :style="{color: configStore.getColor('background')}">
           {{ index + 1 }}.
           <span v-if="verificationResults[index] !== undefined" class="sr-only">
             {{ verificationResults[index] ? 'Passo válido'
               : 'Passo com erro na expressão ou na lei selecionada' }}
           </span>
         </h2>
-        <input v-model="step.value" class="form-input group-hover:bg-(--input-hover)">
+        <input
+          v-model="step.value"
+          class="form-input min-w-0 max-w-full justify-self-start
+          group-hover:bg-(--input-hover)"
+        >
       </div>
 
-      <div class="flex items-center gap-3">
+      <div class="contents">
         <button
-          class="action-button group-hover:bg-(--rule-background) 
-          hover:bg-(--remove-hover)"
-          :style="{'--remove-hover': configStore.getColor('error')}"
+          class="action-button col-start-4 group-hover:bg-(--rule-background)
+          invisible group-hover:visible hover:bg-(--remove-hover)"
+          :style="{'--remove-hover': configStore.getColor('action-button')}"
           type="button"
           @click="simplificationStore.removeStep(index)" aria-label="Adicionar passo"
         >
@@ -124,7 +129,7 @@ function selectColorBackgroundHelper(index: number) {
 @reference "../assets/main.css";
 
 .rule-control {
-  @apply relative;
+  @apply relative col-start-5;
 }
 
 @layer components {
@@ -139,12 +144,42 @@ function selectColorBackgroundHelper(index: number) {
 }
 
 .steps-card {
+  @apply grid content-start gap-x-3;
+  grid-template-columns:
+    max-content minmax(0, max-content) minmax(0, 1fr) 45px max-content;
   @apply max-[760px]:py-[23px];
 }
 
+.steps-header,
+.step {
+  @apply col-span-full grid grid-cols-subgrid items-center;
+}
+
+.steps-header {
+  @apply mb-2 text-center text-sm font-black uppercase;
+}
+
+.step-number-heading {
+  @apply grid justify-self-start;
+}
+
+.step-number-heading::before {
+  content: '1.';
+  @apply invisible col-start-1 row-start-1 h-0 font-normal;
+}
+
+.step-number-heading > span {
+  @apply col-start-1 row-start-1;
+}
+
+.step-number-heading::before,
 .step h2 {
   @apply rounded-[10px] border-[1.5px] px-2 text-4xl leading-[1.25];
   @apply max-[760px]:text-[22px];
+}
+
+.step h2 {
+  @apply justify-self-start;
   background-color: var(--step-feedback-background, transparent);
   border-color: var(--step-feedback-border, transparent);
 }
