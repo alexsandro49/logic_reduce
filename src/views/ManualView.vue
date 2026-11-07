@@ -3,57 +3,21 @@ import { computed, ref } from 'vue';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import HeaderComponent from '@/components/HeaderComponent.vue';
 import { useConfigStore } from '../stores/config';
-import { Rule } from '../utils/types';
+import { LawDetails } from '../utils/types';
+import { lawsDetails } from '../utils/shared';
 
 const configStore = useConfigStore();
-
-const rules: Rule[] = [
-  { name: 'Identidade', description: 'Operar com o elemento neutro não altera o valor.', 
-    examples: ['A + 0 ⇒ A', 'A & 1 ⇒ A'], notes: ['Útil para remover constantes que não\
-     alteram o resultado da expressão.'] },
-  { name: 'Dominação', description: 'O valor dominante determina o resultado da\
-   operação.', examples: ['A + 1 ⇒ 1', 'A & 0 ⇒ 0'], notes: ['O termo dominante depende\
-   do operador utilizado.', 'O valor dominante torna os demais termos da operação\
-   irrelevantes.'] },
-  { name: 'Idempotência', description: 'A repetição de um termo não muda o resultado da\
-  expressão.', examples: ['A + A ⇒ A', 'A & A ⇒ A'], notes: ['Termos repetidos podem ser\
-  reduzidos a uma única ocorrência.'] },
-  { name: 'Complemento', description: 'Uma variável combinada com seu complemento produz\
-  sempre 1 no OU e 0 no E.', examples: ['A + ~A ⇒ 1', 'A & ~A ⇒ 0'], notes: ['A negação é\
-  representada pelo símbolo ~.', 
-  'Uma variável e sua negação sempre possuem valores opostos.']},
-  { name: 'D. Negação', description: 'Duas negações consecutivas se anulam.',
-    examples: ['~(~A) ⇒ A'], notes: ['A expressão retorna ao seu valor original.'] },
-  { name: 'Comutativa', description: 'A ordem dos termos não altera o resultado.',
-    examples: ['A + B ⇒ B + A', 'A & B ⇒ B & A'], notes: ['Pode ser usada para\
-    reorganizar os termos e facilitar a aplicação de outras regras.'] },
-  { name: 'Associativa', description: 'O agrupamento das operações não altera o resultado\
-   quando a operação é a mesma.', examples: ['(A + B) + C ⇒ A + (B + C)',
-    '(A & B) & C ⇒ A & (B & C)'], notes: ['Permite reagrupar termos de uma mesma\
-    operação sem alterar o resultado.'] },
-  { name: 'Distributiva', description: 'Permite distribuir uma operação sobre outra para\
-   reorganizar ou simplificar a expressão.',
-  examples: ['A & (B + C) ⇒ (A & B) + (A & C)'], notes: ['Permite distribuir uma\
-   operação sobre outra para reorganizar ou simplificar a expressão.'] },
-  { name: 'Absorção', description: 'Um termo mais simples pode absorver outro termo que\
-   já depende dele.', examples: ['A + (A & B) ⇒ A', 'A & (A + B) ⇒ A'],
-  notes: ['A variável comum determina o resultado.', 'Remove termos redundantes que não\
-   influenciam o resultado final.'] },
-  { name: 'De Morgan', description: 'Ao negar uma expressão, troca o operador e nega\
-  cada termo.', examples: ['~(A + B) ⇒ ~A & ~B', '~(A & B) ⇒ ~A + ~B'],
-  notes: ['A lei ajuda a mover negações para dentro de parênteses.'] },
-];
 const selectedName = ref('Identidade');
-const selectedRule = computed(() => rules.find((rule) => rule.name === selectedName.value)
-                                                                            ?? rules[0]);
+const selectedLaw = computed(() => lawsDetails.find((law) => 
+  law.name === selectedName.value) ?? lawsDetails[0]);
 
 async function openExternalLink(event: MouseEvent, url: string) {
   event.preventDefault();
   await openUrl(url);
 };
 
-function sidebarColorHelper(rule: Rule) {
-  const value = (selectedName.value === rule.name) ? 'action-button' : 'transparent';
+function sidebarColorHelper(law: LawDetails) {
+  const value = (selectedName.value === law.name) ? 'action-button' : 'transparent';
   return configStore.getColor(value);
 }
 </script>
@@ -79,14 +43,14 @@ function sidebarColorHelper(rule: Rule) {
         </h1>
         <nav>
           <button
-            v-for="rule in rules"
-            :key="rule.name"
-            class="rule-link"
-            :style="{ backgroundColor: sidebarColorHelper(rule) }"
-            :aria-current="selectedName === rule.name ? 'page' : undefined"
-            @click="selectedName = rule.name"
+            v-for="law in lawsDetails"
+            :key="law.name"
+            class="law-link"
+            :style="{ backgroundColor: sidebarColorHelper(law) }"
+            :aria-current="selectedName === law.name ? 'page' : undefined"
+            @click="selectedName = law.name"
           >
-            {{ rule.name }}
+            {{ law.name }}
           </button>
         </nav>
         <div class="topic">
@@ -107,13 +71,13 @@ function sidebarColorHelper(rule: Rule) {
           class="colored-text"
           :style="{ color: configStore.getColor('text') }"
         >
-          {{ selectedRule.name === 'D. Negação' ? 'Dupla Negação' : selectedRule.name }}
+          {{ selectedLaw.name === 'D. Negação' ? 'Dupla Negação' : selectedLaw.name }}
         </h2>
         <p
           class="description"
           :style="{ color: configStore.getColor('text') }"
         >
-          {{ selectedRule.description }}
+          {{ selectedLaw.description }}
         </p>
         <h3
           class="example-heading"
@@ -124,10 +88,10 @@ function sidebarColorHelper(rule: Rule) {
         <section
           class="example-card"
           :style="{ backgroundColor: configStore.getColor('board') }"
-          :aria-label="`Exemplos de ${selectedRule.name}`"
+          :aria-label="`Exemplos de ${selectedLaw.name}`"
         >
           <p
-            v-for="example in selectedRule.examples"
+            v-for="example in selectedLaw.examples"
             :key="example"
           >
             {{ example }}
@@ -142,7 +106,7 @@ function sidebarColorHelper(rule: Rule) {
           </h3>
           <ul>
             <li
-              v-for="note in selectedRule.notes"
+              v-for="note in selectedLaw.notes"
               :key="note"
               :style="{ color: configStore.getColor('text') }"
             >
@@ -178,12 +142,12 @@ function sidebarColorHelper(rule: Rule) {
   @apply flex flex-col;
 }
 
-.rule-link {
+.law-link {
   @apply min-h-[46px] cursor-pointer border-0 border-b-[1.5px] border-[#222] bg-transparent px-[11px] text-left font-roboto text-[25px] font-normal leading-none tracking-[.2px] text-[#282d2d];
 }
 
-.rule-link:hover,
-.rule-link:focus-visible {
+.law-link:hover,
+.law-link:focus-visible {
   @apply bg-[#c9f0e9] outline-none;
 }
 
@@ -269,7 +233,7 @@ function sidebarColorHelper(rule: Rule) {
     @apply grid grid-cols-2;
   }
 
-  .rule-link {
+  .law-link {
     @apply min-h-[42px] border-r-[1.5px] border-[#222] text-[18px];
   }
 

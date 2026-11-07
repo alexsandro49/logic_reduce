@@ -6,10 +6,10 @@ pub async fn verify_manual_step(
     original: String,
     previous: String,
     candidate: String,
-    selected_rule: String,
+    selected_law: String,
 ) -> Result<ManualStepValidation, String> {
     tauri::async_runtime::spawn_blocking(move || {
-        manual_hint::verify_step(&original, &previous, &candidate, &selected_rule)
+        manual_hint::verify_step(&original, &previous, &candidate, &selected_law)
     })
     .await
     .map_err(|error| format!("Não foi possível verificar o passo: {error}"))?

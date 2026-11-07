@@ -7,8 +7,8 @@ use serde::Serialize;
 
 #[derive(Serialize, Debug)]
 pub struct Step {
-    rule_name: String,
-    after_rule: String,
+    law_name: String,
+    after_law: String,
 }
 
 #[tauri::command]
@@ -17,8 +17,8 @@ pub fn manual_completion(source: &str) -> Result<manual_hint::ManualCompletion, 
 }
 
 #[tauri::command]
-pub fn manual_step_hint(previous: &str, selected_rule: &str) -> Result<String, String> {
-    manual_hint::for_step(previous, selected_rule)
+pub fn manual_step_hint(previous: &str, selected_law: &str) -> Result<String, String> {
+    manual_hint::for_step(previous, selected_law)
 }
 
 #[tauri::command]
@@ -39,8 +39,8 @@ pub fn simplify_helper(
 
             for (_, after, _, desc) in steps {
                 steps_result.push(Step {
-                    rule_name: String::from(desc),
-                    after_rule: boolean_algebra::format(&after, None, false, n),
+                    law_name: String::from(desc),
+                    after_law: boolean_algebra::format(&after, None, false, n),
                 });
             }
             Ok((

@@ -2,6 +2,7 @@
 import { PhCaretDown, PhX } from '@phosphor-icons/vue';
 import { useConfigStore } from '../stores/config';
 import { useSimplificationStore } from '../stores/simplification';
+import { lawsSelect } from '../utils/shared';
 
 const configStore = useConfigStore();
 const simplificationStore = useSimplificationStore();
@@ -9,20 +10,6 @@ const simplificationStore = useSimplificationStore();
 const props = defineProps<{
   verificationResults: boolean[];
 }>();
-
-const rules = [
-  { text: 'IDENTIDADE', value: 'identity' },
-  { text: 'DOMINAÇÃO', value: 'null' },
-  { text: 'IDEMPOTÊNCIA', value: 'idempotent' },
-  { text: 'COMPLEMENTO', value: 'complement' },
-  { text: 'D. NEGAÇÃO', value: 'double_negative' },
-  { text: 'COMUTATIVA', value: 'commutative' },
-  { text: 'ASSOCIATIVA', value: 'associative' },
-  { text: 'DISTRIBUTIVA', value: 'distributive' },
-  { text: 'ABSORÇÃO', value: 'absorption' },
-  { text: 'D. MORGAN', value: 'de_morgan' },
-  { text: 'FINAL', value: 'final' },
-];
 
 function stepColorBackgroundHelper(index: number) {
   if (props.verificationResults[index] === undefined) {
@@ -57,10 +44,9 @@ function selectColorBackgroundHelper(index: number) {
     <article
       v-for="(step, index) in simplificationStore.steps" :key="index"
       class="step
-      w-full h-12 mb-5 hover:bg-(--hightlight-hover) group"
-      :style="{
+      w-full h-12 mb-5 hover:bg-(--hightlight-hover) group" :style="{
         '--hightlight-hover': configStore.getColor('base'),
-        '--rule-background': configStore.getColor('board'),
+        '--law-background': configStore.getColor('board'),
 
         '--step-feedback-background':
           configStore.getColor(stepColorBackgroundHelper(index)),
@@ -68,10 +54,10 @@ function selectColorBackgroundHelper(index: number) {
           verificationResults[index] === undefined ? 'transparent' : 'background'),
 
         '--input-hover': configStore.getColor('board')
-      }"
+    }"
     >
       <div class="contents">
-        <h2 :style="{color: configStore.getColor('background')}">
+        <h2 :style="{ color: configStore.getColor('background') }">
           {{ index + 1 }}.
           <span v-if="verificationResults[index] !== undefined" class="sr-only">
             {{ verificationResults[index] ? 'Passo válido'
@@ -79,44 +65,44 @@ function selectColorBackgroundHelper(index: number) {
           </span>
         </h2>
         <input
-          v-model="step.value"
-          class="form-input min-w-0 max-w-full justify-self-start
+          v-model="step.value" class="form-input min-w-0 max-w-full justify-self-start
           group-hover:bg-(--input-hover)"
         >
       </div>
 
       <div class="contents">
         <button
-          class="action-button col-start-4 group-hover:bg-(--rule-background)
+          class="action-button col-start-4 group-hover:bg-(--law-background)
           invisible group-hover:visible hover:bg-(--remove-hover)"
-          :style="{'--remove-hover': configStore.getColor('action-button')}"
-          type="button"
+          :style="{'--remove-hover': configStore.getColor('action-button')}" type="button"
           @click="simplificationStore.removeStep(index)" aria-label="Adicionar passo"
         >
           <PhX
             :size="32" :color="configStore.getColor('icon-color')"
             weight="bold"
           />
-          <span 
-            class="tooltip" :style="{ backgroundColor: configStore.getColor('base') }"
+          <span
+            class="tooltip" 
+            :style="{ backgroundColor: configStore.getColor('base') }"
           >REMOVER</span>
         </button>
-        <div class="rule-control">
+        <div class="law-control">
           <select
-            v-model="step.rule" class="form-input group-hover:bg-(--select-hover)"
+            v-model="step.law" class="form-input group-hover:bg-(--select-hover)"
             :style="{
-              '--select-hover': configStore.getColor(selectColorBackgroundHelper(index))}"
+              '--select-hover': configStore.getColor(selectColorBackgroundHelper(index))
+            }"
             aria-label="Lei aplicada para obter o próximo passo"
           >
             <option
-              v-for="notationOption in rules" :value="notationOption.value"
+              v-for="notationOption in lawsSelect" :value="notationOption.value"
               :key="notationOption.value"
             >
               {{ notationOption.text }}
             </option>
           </select>
           <PhCaretDown
-            class="rule-caret" :size="16"
+            class="law-caret" :size="16"
             aria-hidden="true"
           />
         </div>
@@ -128,18 +114,18 @@ function selectColorBackgroundHelper(index: number) {
 <style scoped>
 @reference "../assets/main.css";
 
-.rule-control {
+.law-control {
   @apply relative col-start-5;
 }
 
 @layer components {
-  .rule-control select {
+  .law-control select {
     @apply appearance-none bg-none pr-9;
-    background-color: var(--step-feedback-background, var(--rule-background));
+    background-color: var(--step-feedback-background, var(--law-background));
   }
 }
 
-.rule-caret {
+.law-caret {
   @apply pointer-events-none absolute right-[13px] top-1/2 -translate-y-1/2 text-[#242424];
 }
 
@@ -168,7 +154,7 @@ function selectColorBackgroundHelper(index: number) {
   @apply invisible col-start-1 row-start-1 h-0 font-normal;
 }
 
-.step-number-heading > span {
+.step-number-heading>span {
   @apply col-start-1 row-start-1;
 }
 

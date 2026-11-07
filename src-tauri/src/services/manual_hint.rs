@@ -15,17 +15,17 @@ pub fn verify_step(
     original: &str,
     previous: &str,
     candidate: &str,
-    selected_rule: &str,
+    selected_law: &str,
 ) -> Result<ManualStepValidation, String> {
     let equivalence = equivalence::verify(original, candidate)?;
     let before = Parser::parse(previous)
         .map_err(|error| format!("Expressão do passo anterior inválida: {error}"))?;
     let after = Parser::parse(candidate)?;
-    let selected = Law::from_id(selected_rule);
+    let selected = Law::from_id(selected_law);
     let law_valid = selected.is_some_and(|law| Rewrite::explains_step(&before, &after, law));
 
     let hint = if !equivalence.equivalent {
-        for_step(previous, selected_rule)?
+        for_step(previous, selected_law)?
     } else if law_valid {
         String::new()
     } else if let Some(correct) = Law::ALL
@@ -51,7 +51,7 @@ pub fn verify_step(
 #[derive(Debug, Serialize)]
 pub struct ManualCompletion {
     pub complete: bool,
-    pub next_rule: Option<&'static str>,
+    pub next_law: Option<&'static str>,
 }
 
 pub fn completion(source: &str) -> Result<ManualCompletion, String> {
@@ -60,23 +60,23 @@ pub fn completion(source: &str) -> Result<ManualCompletion, String> {
     let (_, steps) = boolean_algebra::simplify(expression);
     // Operand order and grouping alone do not make a valid result unfinished.
     // Inspect the whole simplification, since reordering may expose a reduction.
-    let next_rule = steps
+    let next_law = steps
         .iter()
         .find(|(_, _, law, _)| !matches!(law, Law::Commutativity | Law::Associativity))
         .map(|(_, _, law, _)| law.label());
 
     Ok(ManualCompletion {
-        complete: next_rule.is_none(),
-        next_rule,
+        complete: next_law.is_none(),
+        next_law,
     })
 }
 
 /// Suggests a law for an already identified, non-equivalent manual attempt.
-pub fn for_step(previous: &str, selected_rule: &str) -> Result<String, String> {
+pub fn for_step(previous: &str, selected_law: &str) -> Result<String, String> {
     let expression = Parser::parse(previous)
         .map_err(|error| format!("Expressão do passo anterior inválida: {error}"))?;
 
-    if let Some(selected) = Law::from_id(selected_rule)
+    if let Some(selected) = Law::from_id(selected_law)
         && Rewrite::rewrite_using(&expression, selected).is_some()
     {
         return Ok(format!(
@@ -158,7 +158,7 @@ mod tests {
 
     #[test]
     fn equivalent_partial_results_still_require_simplification() {
-        for (source, next_rule) in [
+        for (source, next_law) in [
             ("A & (B + ~B)", "Complemento"),
             ("A & 1", "Identidade"),
             ("(A & B) + (A & ~B)", "Distributiva"),
@@ -166,7 +166,7 @@ mod tests {
         ] {
             let status = completion(source).unwrap();
             assert!(!status.complete, "{source}");
-            assert_eq!(status.next_rule, Some(next_rule));
+            assert_eq!(status.next_law, Some(next_law));
         }
     }
 
@@ -175,7 +175,7 @@ mod tests {
         for source in ["A", "0", "1", "B + A", "A + (B + C)", "(A & ~B) + (B & ~C)"] {
             let status = completion(source).unwrap();
             assert!(status.complete, "{source}");
-            assert!(status.next_rule.is_none());
+            assert!(status.next_law.is_none());
         }
         assert!(
             completion("A &")
@@ -212,7 +212,7 @@ mod tests {
     #[test]
     fn recognizes_valid_laws_beyond_the_automatic_first_choice() {
         // The automatic engine would reorder B + ~A before applying De Morgan.
-        for (previous, selected_rule) in [
+        for (previous, selected_law) in [
             ("~(B + ~A)", "de_morgan"),
             ("(B + A) & 1", "identity"),
             ("A + B", "commutative"),
@@ -220,7 +220,7 @@ mod tests {
             ("A & (B + C)", "distributive"),
         ] {
             assert!(
-                for_step(previous, selected_rule)
+                for_step(previous, selected_law)
                     .unwrap()
                     .contains("está correta"),
                 "{previous}"
@@ -229,7 +229,7 @@ mod tests {
     }
 
     #[test]
-    fn does_not_invent_a_rule_for_an_irreducible_expression() {
+    fn does_not_invent_a_law_for_an_irreducible_expression() {
         assert!(
             for_step("A", "absorption")
                 .unwrap()

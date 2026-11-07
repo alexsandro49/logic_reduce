@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import HeaderComponent from '../components/HeaderComponent.vue';
-
 import ufalIcon from '@/assets/ufal-logo.svg';
 import { computed, ref, watch } from 'vue';
 import { useConfigStore } from '../stores/config.ts';
@@ -34,7 +33,7 @@ const verificationFeedback = computed(() => hintMessage.value
 let verificationVersion = 0;
 
 watch(() => [
-  simplificationStore.steps.map(step => [step.value, step.rule]),
+  simplificationStore.steps.map(step => [step.value, step.law]),
   automaticSimplification.value,
   simplificationStore.submittedExpression,
   simplificationStore.result,
@@ -119,7 +118,7 @@ async function verifyTruthTable(requestHint = false) {
             original,
             previous: step.value,
             candidate: simplificationStore.steps[index + 1].value,
-            selectedRule: step.rule,
+            selectedLaw: step.law,
           }),
         ),
       );
@@ -130,7 +129,7 @@ async function verifyTruthTable(requestHint = false) {
       stepVerificationResults.value = simplificationStore.steps.map((step, index) =>
         (index === 0 || results[index - 1].equivalent)
         && (index === validations.length
-          ? step.rule === 'final' : validations[index].law_valid),
+          ? step.law === 'final' : validations[index].law_valid),
       );
     }
     const firstIncorrectIndex = results.findIndex((result, index) =>
@@ -152,7 +151,7 @@ async function verifyTruthTable(requestHint = false) {
       }
       return;
     }
-    if (!automaticSimplification.value && lastStep.rule !== 'final') {
+    if (!automaticSimplification.value && lastStep.law !== 'final') {
       verificationError.value = `Passo ${simplificationStore.steps.length}: `
         + 'conclusão pendente.';
       if (requestHint) {
@@ -176,8 +175,8 @@ async function verifyTruthTable(requestHint = false) {
         } else {
           verificationError.value = 'Simplificação incompleta.';
           if (requestHint) {
-            hintMessage.value = completion.next_rule
-              ? `Tentativa incompleta. Continue com a lei ${completion.next_rule}.`
+            hintMessage.value = completion.next_law
+              ? `Tentativa incompleta. Continue com a lei ${completion.next_law}.`
               : 'Os passos estão corretos, '
                 + 'mas a última expressão ainda pode ser simplificada.';
           }

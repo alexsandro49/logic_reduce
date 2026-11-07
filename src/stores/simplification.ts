@@ -14,16 +14,16 @@ export const useSimplificationStore = defineStore(
     const error = ref('');
     // const steps: Ref<ReductionStep[]> = ref([]);
     const steps: Ref<ReductionStep[]> = ref([
-      { value: '~((~A + B) & (~B + C))', rule: 'commutative' },
-      { value: '~((B + ~A) & (~B + C))', rule: 'commutative' },
-      { value: '~((B + ~A) & (C + ~B))', rule: 'de_morgan' },
-      { value: '~(B + ~A) + ~(C + ~B)', rule: 'de_morgan' },
-      { value: '(~B & ~~A) + ~(C + ~B)', rule: 'double_negative' },
-      { value: '(~B & A) + ~(C + ~B)', rule: 'commutative' },
-      { value: '(A & ~B) + ~(C + ~B)', rule: 'de_morgan' },
-      { value: '(A & ~B) + (~C & ~~B)', rule: 'double_negative' },
-      { value: '(A & ~B) + (~C & B)', rule: 'commutative' },
-      { value: '(A & ~B) + (B & ~C)', rule: 'final' }
+      { value: '~((~A + B) & (~B + C))', law: 'commutative' },
+      { value: '~((B + ~A) & (~B + C))', law: 'commutative' },
+      { value: '~((B + ~A) & (C + ~B))', law: 'de_morgan' },
+      { value: '~(B + ~A) + ~(C + ~B)', law: 'de_morgan' },
+      { value: '(~B & ~~A) + ~(C + ~B)', law: 'double_negative' },
+      { value: '(~B & A) + ~(C + ~B)', law: 'commutative' },
+      { value: '(A & ~B) + ~(C + ~B)', law: 'de_morgan' },
+      { value: '(A & ~B) + (~C & ~~B)', law: 'double_negative' },
+      { value: '(A & ~B) + (~C & B)', law: 'commutative' },
+      { value: '(A & ~B) + (B & ~C)', law: 'final' }
     ]);
     const result = ref('');
     const submittedExpression = ref('');
@@ -47,8 +47,8 @@ export const useSimplificationStore = defineStore(
 
         result.value = simplifiedExpression;
         stepsAutomatic.value = newSteps.map((step) => ({
-          title: step.rule_name,
-          expression: step.after_rule,
+          title: step.law_name,
+          expression: step.after_law,
           description: 'Regra aplicada durante a simplificação.',
         }));
       } catch (reason) {
@@ -78,7 +78,7 @@ export const useSimplificationStore = defineStore(
     function addStep() {
       const value = expression.value.trim() || placeholder;
 
-      steps.value.push({ value: value, rule: 'identity' });
+      steps.value.push({ value: value, law: 'identity' });
       expression.value = '';
     }
 

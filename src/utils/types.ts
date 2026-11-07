@@ -1,9 +1,4 @@
-export interface stepStruct {
-  rule_name: string,
-  after_rule: string
-};
-
-export type Rule = { name: string; description: string; examples: string[]; 
+export type LawDetails = { name: string; description: string; examples: string[];
                                                                       notes: string[] };
 export type Color = { color: string, tags: string[] };
 
@@ -20,7 +15,7 @@ export type EquivalenceResult = {
 
 export type ManualCompletion = {
   complete: boolean;
-  next_rule: string | null;
+  next_law: string | null;
 };
 
 export type ManualStepValidation = {
@@ -41,7 +36,7 @@ export type TruthTable = {
     total_rows: number,
 }
 
-export type ReductionStep = { value: string; rule: string }
+export type ReductionStep = { value: string; law: string }
 
 export type ReductionStepAutomatic = { 
   title: string;
@@ -50,7 +45,6 @@ export type ReductionStepAutomatic = {
 }
 
 export type StepStruct = {
-  rule_name: string,
-  after_rule: string
+  law_name: string,
+  after_law: string
 };
-
