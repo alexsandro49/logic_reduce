@@ -56,6 +56,19 @@ src-tauri/          # Projeto Rust
 ```
 
 ## Como executar o projeto:
+   1. Clone o repositório na sua máquina:
+   ```
+   git clone https://github.com/alexsandro49/logic_reduce.git
+   ```
+2. Entre na pasta do repositório:
+   ```
+   cd logic_reduce/
+   ```
+3. Instale as dependências:
+   ```
+   pnpm install
+   ```
+4. Execute o projeto:
    ```
    pnpm tauri dev
    ```
