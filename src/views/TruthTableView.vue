@@ -65,7 +65,7 @@ onMounted(async () => {
     class="truth-table-page"
     :class="{ dark: configStore.darkTheme }"
   >
-    <HeaderComponent :active-window-button="1" />
+    <HeaderComponent :is-manual-view="false" />
     <section
       class="truth-table-workspace"
       :style="{backgroundColor: configStore.darkTheme ? 

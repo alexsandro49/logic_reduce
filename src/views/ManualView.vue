@@ -27,7 +27,7 @@ function sidebarColorHelper(law: LawDetails) {
     class="manual-page"
     :class="{ dark: configStore.darkTheme }"
   >
-    <HeaderComponent :active-window-button="2" />
+    <HeaderComponent :is-manual-view="true" />
     <div
       class="manual-layout"
       :style="{ backgroundColor: configStore.darkTheme ?

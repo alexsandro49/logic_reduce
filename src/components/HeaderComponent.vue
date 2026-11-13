@@ -1,33 +1,24 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { useConfigStore } from '../stores/config';
-import {PhCircuitry, PhMoon, PhPalette, PhSun} from '@phosphor-icons/vue';
+import {PhBookBookmark, PhCircuitry, PhMoon} from '@phosphor-icons/vue';
+import Button from './ui/Button.vue';
 
 const props = defineProps<{
-  activeWindowButton: number;
+  isManualView: boolean;
 }>();
 
-const windowButtons = [
-  {name: 'simplificação', route: ''},
-  {name: 'tabela verdade', route: 'truth-table'},
-  {name: 'manual', route: 'manual'}
-];
-
 const configStore = useConfigStore();
-
 const router = useRouter();
 
-function buttonColorHelper(value: number) {
-  const tag = props.activeWindowButton == value ? 'header-active-tab' : 'header-tab';
-  return configStore.getColor(tag);
+function routerHelper(isManualView: boolean) {
+  const route = isManualView ? '/': '/manual';
+  router.push(route);
 }
 </script>
 
 <template>
-  <header
-    class="app-header"
-    :style="{backgroundColor: configStore.getColor('base')}"
-  >
+  <header class="app-header bg-(--color-primary)">
     <a
       class="brand"
       href="#"
@@ -40,61 +31,32 @@ function buttonColorHelper(value: number) {
       />
     </a>
 
-    <nav
-      v-for="(link, index) in windowButtons"
-      :key="index"
-      class="main-navigation"
-      aria-label="Navegação principal"
-    >
-      <a
-        :style="{backgroundColor: buttonColorHelper(index)}"
-        class="navigation-link hover:-translate-y-px hover:brightness-[.96]"
-        @click="router.push(`/${link.route}`)"
-      >{{ link.name }}</a>
-    </nav>
+    <h1 class="text-white text-2xl font-bold">
+      Logic Reduce
+    </h1>
 
     <div class="header-actions">
-      <button
+      <Button
+        :variant="props.isManualView ? 'accent' : 'secondary'" animation="pop"
+        as="a" class="hover:cursor-pointer"
+        @click="routerHelper(props.isManualView)"
+      >
+        <PhBookBookmark
+          :size="32" color="#000000"
+          weight="fill"
+        />
+        Manual
+      </Button>
+      <Button
+        variant="secondary" animation="pop"
+        class="hover:cursor-pointer"
         @click="configStore.darkTheme = !configStore.darkTheme"
-        class="icon-button hover:-translate-y-px hover:brightness-[.96]"
-        :style="{backgroundColor: configStore.getColor('navigation-link')}"
-        type="button"
-        aria-label="Alternar tema"
       >
-        <PhSun
-          v-if="configStore.darkTheme == true"
-          :size="28"
-          :color="configStore.getColor('icon-color')"
-          weight="fill"
-        />
         <PhMoon
-          v-else
-          :size="28"
-          :color="configStore.getColor('icon-color')"
+          :size="32" color="#000000"
           weight="fill"
         />
-        <span
-          class="tooltip"
-          :style="{backgroundColor: configStore.getColor('base')}"
-        >ALTERNAR MODO</span>
-      </button>
-      <button
-        class="icon-button hover:-translate-y-px hover:brightness-[.96]"
-        @click="configStore.nextTheme()"
-        :style="{backgroundColor: configStore.getColor('navigation-link')}"
-        type="button"
-        aria-label="Imprimir página"
-      >
-        <PhPalette
-          :size="28"
-          :color="configStore.getColor('icon-color')"
-          weight="fill"
-        />
-        <span
-          class="tooltip"
-          :style="{backgroundColor: configStore.getColor('base')}"
-        >ALTERNAR TEMA</span>
-      </button>
+      </Button>
     </div>
   </header>
 </template>

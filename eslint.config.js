@@ -20,6 +20,7 @@ export default defineConfig([
       indent: ['error', 2],
       'comma-spacing': ['error', {before: false, after: true}],
       'no-multi-spaces': 0,
+      'vue/multi-word-component-names': 'off',
       'vue/max-len': ['error', {
         'code': 90,
         'template': 90,

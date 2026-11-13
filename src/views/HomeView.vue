@@ -207,7 +207,7 @@ async function verifyTruthTable(requestHint = false) {
         configStore.getColor('background') : '#FFFFFF'
     }"
   >
-    <HeaderComponent :active-window-button="0" />
+    <HeaderComponent :is-manual-view="false" />
     <section
       class="workspace"
       aria-label="Simplificação de expressão booleana"
