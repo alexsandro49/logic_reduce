@@ -1,0 +1,25 @@
+<script setup lang="ts">
+/* eslint-disable vue/max-len */
+
+import { cn } from '@/lib/utils';
+
+defineProps<{
+  class?: string
+  interactive?: boolean
+}>();
+</script>
+
+<template>
+  <div
+    :class="
+      cn(
+        'bg-card text-card-foreground border-3 border-foreground shadow-[4px_4px_0px_hsl(var(--shadow-color))] bk-interactive',
+        interactive &&
+          'cursor-pointer hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none active:translate-x-[4px] active:translate-y-[4px] active:shadow-none',
+        $props.class
+      )
+    "
+  >
+    <slot />
+  </div>
+</template>

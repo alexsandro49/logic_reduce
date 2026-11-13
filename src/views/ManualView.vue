@@ -3,127 +3,145 @@ import { computed, ref } from 'vue';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import HeaderComponent from '@/components/HeaderComponent.vue';
 import { useConfigStore } from '../stores/config';
-import { LawDetails } from '../utils/types';
 import { lawsDetails } from '../utils/shared';
+import SidebarProvider from '@/components/ui/SidebarProvider.vue';
+import Sidebar from '@/components/ui/Sidebar.vue';
+import SidebarHeader from '@/components/ui/SidebarHeader.vue';
+import SidebarContent from '@/components/ui/SidebarContent.vue';
+import SidebarItem from '@/components/ui/SidebarItem.vue';
+import SidebarInset from '@/components/ui/SidebarInset.vue';
+import { PhCaretLeft, PhCaretRight } from '@phosphor-icons/vue';
+import StatCard from '@/components/ui/StatCard.vue';
+import Pagination from '@/components/ui/Pagination.vue';
+import PaginationContent from '@/components/ui/PaginationContent.vue';
+import PaginationItem from '@/components/ui/PaginationItem.vue';
+import PaginationLink from '@/components/ui/PaginationLink.vue';
+import SidebarFooter from '@/components/ui/SidebarFooter.vue';
 
 const configStore = useConfigStore();
+
 const selectedName = ref('Identidade');
-const selectedLaw = computed(() => lawsDetails.find((law) => 
+
+const previousName = computed(() => {
+  const index = lawsDetails.findIndex((law) => law.name === selectedName.value);
+  return (index > 0) ? lawsDetails[index - 1].name : '';
+});
+
+const nextName = computed(() => {
+  const index = lawsDetails.findIndex((law) => law.name === selectedName.value);
+  return (index < lawsDetails.length - 1) ? lawsDetails[index + 1].name : '';
+});
+
+const selectedLaw = computed(() => lawsDetails.find((law) =>
   law.name === selectedName.value) ?? lawsDetails[0]);
+
+const isFirstLaw = computed(() => selectedLaw.value === lawsDetails[0]);
+const isLastLaw = computed(() =>
+  selectedLaw.value === lawsDetails[lawsDetails.length - 1]);
 
 async function openExternalLink(event: MouseEvent, url: string) {
   event.preventDefault();
   await openUrl(url);
 };
 
-function sidebarColorHelper(law: LawDetails) {
-  const value = (selectedName.value === law.name) ? 'action-button' : 'transparent';
-  return configStore.getColor(value);
+function changeLawHelper(isNext: boolean) {
+  const index = lawsDetails.findIndex((law) => law.name === selectedName.value);
+
+  if (isNext) {
+    if (index < lawsDetails.length - 1) {
+      selectedName.value = lawsDetails[index + 1].name;
+    }
+  } else {
+    if (index > 0) {
+      selectedName.value = lawsDetails[index - 1].name;
+    }
+  }
 }
 </script>
 
 <template>
-  <main
-    class="manual-page"
-    :class="{ dark: configStore.darkTheme }"
-  >
-    <HeaderComponent :is-manual-view="true" />
-    <div
-      class="manual-layout"
-      :style="{ backgroundColor: configStore.darkTheme ?
-        configStore.getColor('background') : '#FFFFFF' }"
-    >
-      <aside
-        class="sidebar"
-        :style="{ backgroundColor: configStore.getColor('board') }"
-        aria-label="Regras da álgebra booleana"
-      >
-        <h1 :style="{ color: configStore.getColor('input-text') }">
-          Propriedades
-        </h1>
-        <nav>
-          <button
-            v-for="law in lawsDetails"
-            :key="law.name"
-            class="law-link"
-            :style="{ backgroundColor: sidebarColorHelper(law) }"
-            :aria-current="selectedName === law.name ? 'page' : undefined"
+  <div class="manual-page" :class="{ dark: configStore.darkTheme }">
+    <HeaderComponent :is-manual-view="true" class="shrink-0" />
+    <SidebarProvider class="min-h-0 flex-1">
+      <Sidebar>
+        <SidebarHeader class="flex justify-center items-center font-bold text-xl">
+          Identidades
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarItem
+            :variant="selectedLaw == law ? 'active' : 'default'"
+            v-for="law in lawsDetails" :key="law.name"
             @click="selectedName = law.name"
           >
             {{ law.name }}
-          </button>
-        </nav>
-        <div class="topic">
-          <span :style="{color: configStore.getColor('input-text') }">Sobre o tema:</span>
-          <a
-            :style="{ color: configStore.getColor('board'),
-                      backgroundColor: configStore.getColor('base') }"
+          </SidebarItem>
+        </SidebarContent>
+        <SidebarFooter>
+          <SidebarItem
+            variant="active" class="hover:cursor-pointer"
             href="https://pt.wikipedia.org/wiki/%C3%81lgebra_booleana"
             @click="openExternalLink(
-              $event,'https://pt.wikipedia.org/wiki/%C3%81lgebra_booleana')"
-          >Álgebra
-            Booleana</a>
-        </div>
-      </aside>
-
-      <article class="content">
-        <h2
-          class="colored-text"
-          :style="{ color: configStore.getColor('text') }"
-        >
-          {{ selectedLaw.name === 'D. Negação' ? 'Dupla Negação' : selectedLaw.name }}
-        </h2>
-        <p
-          class="description"
-          :style="{ color: configStore.getColor('text') }"
-        >
-          {{ selectedLaw.description }}
-        </p>
-        <h3
-          class="example-heading"
-          :style="{ color: configStore.getColor('text') }"
-        >
-          EXEMPLO:
-        </h3>
-        <section
-          class="example-card"
-          :style="{ backgroundColor: configStore.getColor('board') }"
-          :aria-label="`Exemplos de ${selectedLaw.name}`"
-        >
-          <p
-            v-for="example in selectedLaw.examples"
-            :key="example"
+              $event, 'https://pt.wikipedia.org/wiki/%C3%81lgebra_booleana')"
           >
-            {{ example }}
+            Mais sobre o tema
+          </SidebarItem>
+        </SidebarFooter>
+      </Sidebar>
+      <SidebarInset>
+        <main class="p-8">
+          <h2>{{ selectedName }}</h2>
+          <p>{{ selectedLaw.description }}</p>
+
+          <StatCard
+            title="Exemplo" :value="selectedLaw.examples.join('\n')"
+            variant="large" color="primary"
+            class="mb-3"
+          />
+
+          <Pagination>
+            <PaginationContent class="flex justify-between w-full">
+              <PaginationItem>
+                <PaginationLink
+                  size="default" is-active
+                  class="hover:cursor-pointer hover:animate-[brutal-pop_0.2s_ease-out]
+                    active:scale-95" :class="{'pointer-events-none opacity-50': 
+                isFirstLaw }"
+                  @click="changeLawHelper(false)"
+                >
+                  <PhCaretLeft class="h-4 w-4 stroke-3" />
+                  {{ previousName }}
+                </PaginationLink>
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationLink
+                  size="default" is-active
+                  as="button" class="hover:cursor-pointer
+                  hover:animate-[brutal-pop_0.2s_ease-out] active:scale-95"
+                  :class="{ 'pointer-events-none opacity-50': isLastLaw }"
+                  @click="changeLawHelper(true)"
+                >
+                  <PhCaretRight class="h-4 w-4 stroke-3" />
+                  {{ nextName }}
+                </PaginationLink>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+
+          <h2>Observações:</h2>
+          <p v-for="note in selectedLaw.notes" :key="note">
+            {{ note }}
           </p>
-        </section>
-        <section
-          class="notes"
-          :style="{ color: configStore.getColor('text') }"
-        >
-          <h3 class="colored-text">
-            Observações:
-          </h3>
-          <ul>
-            <li
-              v-for="note in selectedLaw.notes"
-              :key="note"
-              :style="{ color: configStore.getColor('text') }"
-            >
-              {{ note }}
-            </li>
-          </ul>
-        </section>
-      </article>
-    </div>
-  </main>
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
+  </div>
 </template>
 
 <style scoped>
 @reference "../assets/main.css";
 
 .manual-page {
-  @apply min-h-dvh overflow-hidden;
+  @apply flex h-dvh flex-col overflow-hidden;
 }
 
 .manual-layout {
@@ -171,12 +189,24 @@ function sidebarColorHelper(law: LawDetails) {
   @apply min-w-0 flex-1 pt-[14px] pr-[22px] pb-[46px] pl-[22px];
 }
 
-.content h2 {
-  @apply m-0 text-[61px] font-black leading-[1.12] tracking-[.2px];
+main>h2 {
+  @apply mt-6 mb-2 text-lg font-bold uppercase leading-4 tracking-[.6px] text-muted-foreground;
 }
 
-.description {
-  @apply mt-[13px] mr-0 mb-[18px] ml-0 max-w-[940px] text-[20px] leading-[1.28] tracking-[.4px];
+main>h2:first-child {
+  @apply m-0 mb-2 text-[48px] font-bold normal-case leading-[1.1] tracking-[-1.2px] text-foreground;
+}
+
+main>p {
+  @apply m-0 max-w-[680px] text-[16px] leading-[1.4] text-foreground/80;
+}
+
+main>h2:first-child+p {
+  @apply mb-6 max-w-[940px] text-[18px] leading-[1.5];
+}
+
+main>p+p {
+  @apply mt-2;
 }
 
 .example-heading {
@@ -245,12 +275,12 @@ function sidebarColorHelper(law: LawDetails) {
     @apply px-4 pt-6 pb-[35px];
   }
 
-  .content h2 {
-    @apply text-[45px];
+  main>h2:first-child {
+    @apply text-[36px];
   }
 
-  .description {
-    @apply text-[17px];
+  main>h2:first-child+p {
+    @apply text-[16px];
   }
 
   .example-card {

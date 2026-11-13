@@ -200,12 +200,8 @@ async function verifyTruthTable(requestHint = false) {
 
 <template>
   <main
-    class="page-shell"
+    class="page-shell bg-background"
     :class="{ dark: configStore.darkTheme }"
-    :style="{
-      backgroundColor: configStore.darkTheme ?
-        configStore.getColor('background') : '#FFFFFF'
-    }"
   >
     <HeaderComponent :is-manual-view="false" />
     <section
@@ -447,7 +443,7 @@ async function verifyTruthTable(requestHint = false) {
 @reference "../assets/main.css";
 
 .page-shell {
-  @apply relative flex h-dvh max-h-dvh min-h-0 flex-col overflow-hidden box-border rounded-b-[20px] bg-white font-roboto text-[#242424] max-[760px]:px-3.5;
+  @apply relative flex h-dvh max-h-dvh min-h-0 flex-col overflow-hidden box-border rounded-b-[20px] font-roboto text-[#242424] max-[760px]:px-3.5;
 }
 
 .page-shell :deep(.app-header) {
