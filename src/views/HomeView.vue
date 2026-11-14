@@ -1,21 +1,39 @@
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import HeaderComponent from '../components/HeaderComponent.vue';
-import ufalIcon from '@/assets/ufal-logo.svg';
 import { computed, ref, watch } from 'vue';
 import { useConfigStore } from '../stores/config.ts';
-import { PhBook, PhCopySimple, PhEye, PhGithubLogo, PhLightbulbFilament, PhPlus }
+import { PhCopy, PhEraser, PhMagicWand, PhShuffleAngular }
   from '@phosphor-icons/vue';
 import { useSimplificationStore } from '../stores/simplification.ts';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
-import ActionButtons from '../components/ActionButtons.vue';
-import AutomaticSimplificationContainer
-  from '../components/AutomaticSimplificationContainer.vue';
-import ManualSimplificationContainer
-  from '../components/ManualSimplificationContainer.vue';
 import { invoke } from '@tauri-apps/api/core';
 import type {
   EquivalenceResult, ManualCompletion, ManualStepValidation,
 } from '../utils/types.ts';
+import Input from '@/components/ui/Input.vue';
+import ButtonGroup from '@/components/ui/ButtonGroup.vue';
+import Button from '@/components/ui/Button.vue';
+import Card from '@/components/ui/Card.vue';
+import CardHeader from '@/components/ui/CardHeader.vue';
+import CardTitle from '@/components/ui/CardTitle.vue';
+import CardContent from '@/components/ui/CardContent.vue';
+import Timeline from '@/components/ui/Timeline.vue';
+import ScrollArea from '@/components/ui/ScrollArea.vue';
+import TimelineItem from '@/components/ui/TimelineItem.vue';
+import TimelineDot from '@/components/ui/TimelineDot.vue';
+import TimelineConnector from '@/components/ui/TimelineConnector.vue';
+import TimelineContent from '@/components/ui/TimelineContent.vue';
+import TimelineTitle from '@/components/ui/TimelineTitle.vue';
+import TimelineDescription from '@/components/ui/TimelineDescription.vue';
+import TimelineCard from '@/components/ui/TimelineCard.vue';
+import Checkbox from '@/components/ui/Checkbox.vue';
+import Label from '@/components/ui/Label.vue';
+import Tabs from '@/components/ui/Tabs.vue';
+import TabsList from '@/components/ui/TabsList.vue';
+import TabsTrigger from '@/components/ui/TabsTrigger.vue';
+import TabsContent from '@/components/ui/TabsContent.vue';
 
 const configStore = useConfigStore();
 const simplificationStore = useSimplificationStore();
@@ -32,6 +50,56 @@ const verificationFeedback = computed(() => hintMessage.value
   || verificationError.value || verificationMessage.value);
 let verificationVersion = 0;
 
+const timelineItems = [
+  {
+    name: 'Comutativa',
+    before: '~((~A + B) & (~B + C))',
+    after: '~((B + ~A) & (~B + C))'
+  },
+  {
+    name: 'Comutativa',
+    before: '~((B + ~A) & (~B + C))',
+    after: '~((B + ~A) & (C + ~B))'
+  },
+  {
+    name: 'De Morgan',
+    before: '~((B + ~A) & (C + ~B))',
+    after: '~(B + ~A) + ~(C + ~B)'
+  },
+  {
+    name: 'De Morgan',
+    before: '~(B + ~A) + ~(C + ~B)',
+    after: '~(B & ~~A) + ~(C + ~B)'
+  },
+  {
+    name: 'D. Negação',
+    before: '~(B & ~~A) + ~(C + ~B)',
+    after: '~(B & A) + ~(C + ~B)'
+  },
+  {
+    name: 'Comutativa',
+    before: '(~B & A) + ~(C + ~B)',
+    after: '(A & ~B) + ~(C + ~B)'
+  },
+  {
+    name: 'De Morgan',
+    before: '(A & ~B) + ~(C + ~B)',
+    after: '(A & ~B) + (~C & ~~B)'
+  },
+  {
+    name: 'D. Negação',
+    before: '(A & ~B) + (~C & ~~B)',
+    after: '(A & ~B) + (~C & B)'
+  },
+  {
+    name: 'Comutativa',
+    before: '(A & ~B) + (~C & B)',
+    after: '(A & ~B) + (B & ~C)'
+  },
+];
+const checked = ref(false);
+const activeTab = ref('solucao');
+
 watch(() => [
   simplificationStore.steps.map(step => [step.value, step.law]),
   automaticSimplification.value,
@@ -45,11 +113,6 @@ watch(() => [
   stepVerificationResults.value = [];
   hintMessage.value = '';
 }, { deep: true, flush: 'sync' });
-
-function footerColorHelper(): string {
-  const value = configStore.darkTheme ? 'board' : 'icon-color';
-  return configStore.getColor(value);
-}
 
 async function copyResult() {
   await writeText(simplificationStore.result);
@@ -208,234 +271,158 @@ async function verifyTruthTable(requestHint = false) {
       class="workspace"
       aria-label="Simplificação de expressão booleana"
     >
-      <div class="controls-row">
-        <label class="expression-field">
-          <span
-            class="font-text"
-            :style="{ color: configStore.getColor('text') }"
-          >Expressão booleana:</span>
-          <input
-            v-model="simplificationStore.expression"
-            class="form-input"
-            placeholder="~((~A + B) & (~B + C))"
-            :style="{
-              backgroundColor: configStore.getColor('input'),
-              color: configStore.getColor('input-text'),
-              '--placeholder-color': configStore.getColor('input-text')
-            }"
-            type="text"
-            aria-label="Expressão booleana"
-          >
-        </label>
-        <div class="action-controls">
-          <button
-            class="action-button"
-            :style="{ backgroundColor: configStore.getColor('action-button') }"
-            type="button"
-            @click="simplificationStore.addStep"
-            aria-label="Adicionar passo"
-            v-if="!automaticSimplification"
-          >
-            <PhPlus
-              :size="32"
-              :color="configStore.getColor('icon-color')"
-              weight="bold"
-            />
-            <span
-              class="tooltip"
-              :style="{ backgroundColor: configStore.getColor('base') }"
-            >ADICIONAR</span>
-          </button>
+      <div class="flex min-h-0 gap-4">
+        <div class="flex flex-col gap-4 flex-1">
+          <Card>
+            <CardHeader class="bg-primary">
+              <CardTitle class="text-white">
+                Expressão Booleana
+              </CardTitle>
+            </CardHeader>
+            <CardContent class="pt-6 flex flex-col gap-4">
+              <Input
+                placeholder="Escreva a expressão original" class="h-20 min-h-20
+              placeholder:text-black text-2xl md:text-2xl font-semibold
+                placeholder:text-lg text-black"
+              />
 
-          <ActionButtons
-            @check-button="checkExpression"
-            @trash-button="simplificationStore.clearData"
-            @refresh-button="simplificationStore.randomExpressionHelper"
-            check-button-label="Simplificar expressão"
-            trash-button-label="Limpar expressão"
-            refresh-button-label="Expressão aleatória"
-            check-button-tooltip="SIMPLIFICAR"
-            trash-button-tooltip="LIMPAR"
-            refresh-button-tooltip="ALEATÓRIO"
-          />
+              <ButtonGroup class="flex gap-2">
+                <Button
+                  variant="default" animation="pop"
+                  class="grow-3 hover:cursor-pointer"
+                >
+                  <PhMagicWand weight="fill" />
+                  Simplificar
+                </Button>
+                <Button
+                  variant="secondary" animation="pop"
+                  class="grow hover:cursor-pointer"
+                >
+                  <PhShuffleAngular weight="bold" />
+                  Exemplo
+                </Button>
+                <Button
+                  variant="accent" animation="pop"
+                  class="grow hover:cursor-pointer"
+                >
+                  <PhEraser weight="fill" />
+                  Limpar
+                </Button>
+              </ButtonGroup>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader class="bg-primary flex flex-row justify-between">
+              <CardTitle class="text-white">
+                Resultado
+              </CardTitle>
+              <CardTitle class="text-white">
+                {{ timelineItems.length }} passos
+              </CardTitle>
+            </CardHeader>
+            <CardContent class="pt-6 flex justify-between items-center">
+              <p class="text-2xl font-bold">
+                (~A & ~B) + (B & ~C)
+              </p>
+              <Button
+                variant="accent" animation="pop"
+                class="hover:cursor-pointer" @click="copyResult"
+              >
+                <PhCopy weight="fill" />
+                {{ copyButtonTittle }}
+              </Button>
+            </CardContent>
+          </Card>
         </div>
 
-        <div class="verification-controls">
-          <p
-            v-if="verificationFeedback"
-            class="verification-feedback font-text"
-            :style="{ color: configStore.getColor('text') }"
-            :role="verificationError ? 'alert' : 'status'"
-            aria-atomic="true"
-            tabindex="0"
+        <Card class="flex-1 flex flex-col min-h-0 min-w-0">
+          <CardHeader
+            class="bg-primary shrink-0 flex flex-row justify-between
+            items-center"
           >
-            {{ verificationFeedback.toUpperCase() }}
-          </p>
-          <button
-            v-if="!automaticSimplification"
-            class="action-button"
-            :style="{ backgroundColor: configStore.getColor('action-button') }"
-            type="button"
-            aria-label="Mostrar dica para a simplificação manual"
-            aria-describedby="manual-hint-tooltip"
-            :disabled="isVerifying || simplificationStore.isSimplifying"
-            :aria-busy="isVerifying"
-            @click="verifyTruthTable(true)"
-          >
-            <PhLightbulbFilament
-              :size="32"
-              :color="configStore.getColor('icon-color')"
-              weight="fill"
-            />
-            <span
-              id="manual-hint-tooltip"
-              role="tooltip"
-              class="tooltip"
-              :style="{ backgroundColor: configStore.getColor('base') }"
-            >DICA</span>
-          </button>
+            <CardTitle class="text-white">
+              Passo a passo
+            </CardTitle>
 
-          <button
-            class="action-button"
-            :style="{
-              backgroundColor: automaticSimplification ?
-                configStore.getColor('board') : configStore.getColor('action-button')
-            }"
-            type="button"
-            @click="automaticSimplificationHelper"
-            aria-label="Adicionar passo"
-          >
-            <PhEye
-              :size="32"
-              :color="configStore.getColor('icon-color')"
-              weight="fill"
-            />
-            <span
-              class="tooltip tooltip-end"
-              :style="{ backgroundColor: configStore.getColor('base') }"
-            >SIMPLIFICAÇÃO
-              AUTOMÁTICA</span>
-          </button>
-        </div>
+            <div class="flex items-center space-x-2">
+              <Tabs v-model="activeTab">
+                <TabsList>
+                  <TabsTrigger
+                    value="solucao" class="text-xs
+                    data-[state=active]:bg-secondary data-[state=active]:text-black
+                    hover:cursor-pointer"
+                  >
+                    Solução
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="praticar" class="text-xs 
+                    data-[state=active]:bg-secondary data-[state=active]:text-black
+                    hover:cursor-pointer"
+                  >
+                    Praticar
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="tabela_verdade" class="text-xs
+                    data-[state=active]:bg-secondary data-[state=active]:text-black
+                    hover:cursor-pointer"
+                  >
+                    Tabela Verdade
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="overview">
+                  Overview content
+                </TabsContent>
+                <TabsContent value="analytics">
+                  Analytics content
+                </TabsContent>
+                <TabsContent value="reports">
+                  Reports content
+                </TabsContent>
+              </Tabs>
+
+              <Checkbox
+                id="controlled"
+                v-model:checked="checked"
+                class="bg-secondary data-[state=checked]:bg-secondary
+                data-[state=checked]:text-black hover:cursor-pointer"
+              />
+              <Label for="controlled" class="text-white">
+                Exibir exemplos
+              </Label>
+            </div>
+          </CardHeader>
+          <CardContent class="flex flex-col flex-1 min-h-0">
+            <ScrollArea class="flex-1 min-h-0 border-foreground">
+              <Timeline>
+                <TimelineItem
+                  status="completed" v-for="(item, index) in timelineItems"
+                  :key="item.name"
+                >
+                  <TimelineDot status="current" class="text-white font-bold">
+                    {{ index + 1 }}
+                  </TimelineDot>
+                  <TimelineConnector status="completed" />
+                  <TimelineContent>
+                    <TimelineCard>
+                      <TimelineTitle class="text-lg">
+                        {{ item.name }}
+                      </TimelineTitle>
+                      <TimelineDescription class="text-lg">
+                        {{ item.before }}
+                      </TimelineDescription>
+                      <TimelineDescription class="text-lg font-semibold">
+                        {{ item.after }}
+                      </TimelineDescription>
+                    </TimelineCard>
+                  </TimelineContent>
+                </TimelineItem>
+              </Timeline>
+            </ScrollArea>
+          </CardContent>
+        </Card>
       </div>
-      <section
-        class="steps-section"
-        aria-labelledby="steps-title"
-      >
-        <h1
-          id="steps-title"
-          class="font-text"
-          :style="{ color: configStore.getColor('text') }"
-        >
-          Passos:
-        </h1>
-
-        <AutomaticSimplificationContainer v-if="automaticSimplification" />
-        <ManualSimplificationContainer
-          v-else
-          :verification-results="stepVerificationResults"
-        />
-
-        <p
-          v-if="simplificationStore.error"
-          role="alert"
-        >
-          {{ simplificationStore.error }}
-        </p>
-      </section>
     </section>
-    <div class="bottom-row">
-      <section
-        class="result-row"
-        aria-label="Resultado simplificado"
-        v-if="automaticSimplification"
-      >
-        <h2
-          class="font-text"
-          :style="{ color: configStore.getColor('text') }"
-        >
-          Forma simplificada:
-        </h2>
-        <output
-          class="form-input result-value"
-          :style="{ backgroundColor: configStore.getColor('board') }"
-        >{{
-          simplificationStore.result }}</output>
-        <button
-          class="copy-button"
-          type="button"
-          aria-label="Alternar tema"
-          @click="copyResult"
-          :disabled="simplificationStore.result === ''"
-        >
-          <PhCopySimple
-            :size="32"
-            :color="configStore.getColor('text')"
-            weight="fill"
-          />
-          <span
-            class="tooltip"
-            :style="{ backgroundColor: configStore.getColor('base') }"
-          >{{ copyButtonTittle }}</span>
-        </button>
-      </section>
-      <footer
-        class="page-footer"
-        :style="{ borderColor: footerColorHelper() }"
-      >
-        <strong :style="{ color: footerColorHelper() }">2026</strong>
-        <button
-          class="action-button"
-          :style="{ backgroundColor: configStore.getColor('footer-buttons-background') }"
-          type="button"
-          aria-label="Alternar tema"
-        >
-          <img
-            :src="ufalIcon"
-            class="ufal-button-img"
-            alt="Moon icon"
-            aria-hidden="true"
-          >
-          <span
-            class="footer-tooltip"
-            :style="{ backgroundColor: configStore.getColor('base') }"
-          >UFAL</span>
-        </button>
-        <button
-          class="action-button"
-          :style="{ backgroundColor: configStore.getColor('footer-buttons-background') }"
-          type="button"
-          aria-label="Alternar tema"
-        >
-          <PhBook
-            :size="32"
-            :color="configStore.getColor('footer-buttons-color')"
-            weight="fill"
-          />
-          <span
-            class="footer-tooltip"
-            :style="{ backgroundColor: configStore.getColor('base') }"
-          >TRABALHO
-            RELACIONADO</span>
-        </button>
-        <button
-          class="action-button"
-          :style="{ backgroundColor: configStore.getColor('footer-buttons-background') }"
-          type="button"
-          aria-label="Alternar tema"
-        >
-          <PhGithubLogo
-            :size="32"
-            :color="configStore.getColor('footer-buttons-color')"
-            weight="fill"
-          />
-          <span
-            class="footer-tooltip"
-            :style="{ backgroundColor: configStore.getColor('base') }"
-          >REPOSITÓRIO</span>
-        </button>
-      </footer>
-    </div>
   </main>
 </template>
 
@@ -451,7 +438,7 @@ async function verifyTruthTable(requestHint = false) {
 }
 
 .workspace {
-  @apply grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] gap-7 px-8;
+  @apply grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)] px-8;
   @apply pt-[43px] pb-7 max-[760px]:pt-7;
 }
 
