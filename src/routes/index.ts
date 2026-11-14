@@ -10,14 +10,6 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: '/truth-table',
-      name: 'truth-table',
-      meta: {
-        requiresAuth: true,
-      },
-      component: () => import('@/views/TruthTableView.vue'),
-    },
-    {
       path: '/manual',
       name: 'manual',
       component: () => import('@/views/ManualView.vue'),

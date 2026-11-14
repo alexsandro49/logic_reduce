@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import HeaderComponent from '../components/HeaderComponent.vue';
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, Ref, ref, watch } from 'vue';
 import { useConfigStore } from '../stores/config.ts';
 import { PhCopy, PhEraser, PhMagicWand, PhShuffleAngular }
   from '@phosphor-icons/vue';
@@ -11,6 +11,7 @@ import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { invoke } from '@tauri-apps/api/core';
 import type {
   EquivalenceResult, ManualCompletion, ManualStepValidation,
+  TruthTableRows,
 } from '../utils/types.ts';
 import Input from '@/components/ui/Input.vue';
 import ButtonGroup from '@/components/ui/ButtonGroup.vue';
@@ -33,7 +34,13 @@ import Label from '@/components/ui/Label.vue';
 import Tabs from '@/components/ui/Tabs.vue';
 import TabsList from '@/components/ui/TabsList.vue';
 import TabsTrigger from '@/components/ui/TabsTrigger.vue';
-import TabsContent from '@/components/ui/TabsContent.vue';
+import Table from '@/components/ui/Table.vue';
+import TableHeader from '@/components/ui/TableHeader.vue';
+import TableRow from '@/components/ui/TableRow.vue';
+import TableHead from '@/components/ui/TableHead.vue';
+import TableBody from '@/components/ui/TableBody.vue';
+import TableCell from '@/components/ui/TableCell.vue';
+import TruthTable from '@/components/TruthTable.vue';
 
 const configStore = useConfigStore();
 const simplificationStore = useSimplificationStore();
@@ -97,8 +104,9 @@ const timelineItems = [
     after: '(A & ~B) + (B & ~C)'
   },
 ];
-const checked = ref(false);
-const activeTab = ref('solucao');
+const showExamples = ref(false);
+const compactTable = ref(false);
+const activeTab = ref('solution');
 
 watch(() => [
   simplificationStore.steps.map(step => [step.value, step.law]),
@@ -259,6 +267,16 @@ async function verifyTruthTable(requestHint = false) {
     if (version === verificationVersion) isVerifying.value = false;
   }
 }
+
+const columns: Ref<string[]> = ref([]);
+const rows: Ref<TruthTableRows[]> = ref([]);
+
+watch([() => compactTable.value, activeTab], async () => {
+  [columns.value, rows.value] =
+    await simplificationStore.getTruthTable(simplificationStore.expression, columns,
+      rows, compactTable.value);
+  columns.value[columns.value.length - 1] = 'S';
+});
 </script>
 
 <template>
@@ -345,55 +363,69 @@ async function verifyTruthTable(requestHint = false) {
               Passo a passo
             </CardTitle>
 
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center gap-2">
+              <div
+                class="flex items-center gap-2 w-full"
+                v-if="activeTab === 'solution'"
+              >
+                <Checkbox
+                  id="controlled"
+                  v-model:checked="showExamples"
+                  class="bg-secondary data-[state=checked]:bg-secondary
+                data-[state=checked]:text-black hover:cursor-pointer"
+                />
+                <Label for="controlled" class="text-white text-sm font-bold">
+                  Exibir exemplos
+                </Label>
+              </div>
+
+              <div
+                class="flex items-center gap-2 w-full"
+                v-if="activeTab === 'truth_table'"
+              >
+                <Checkbox
+                  id="controlled"
+                  v-model:checked="compactTable"
+                  class="bg-secondary data-[state=checked]:bg-secondary
+                data-[state=checked]:text-black hover:cursor-pointer"
+                />
+                <Label for="controlled" class="text-white text-sm font-bold">
+                  Tabela compacta
+                </Label>
+              </div>
+
               <Tabs v-model="activeTab">
                 <TabsList>
                   <TabsTrigger
-                    value="solucao" class="text-xs
+                    value="solution" class="text-xs
                     data-[state=active]:bg-secondary data-[state=active]:text-black
                     hover:cursor-pointer"
                   >
                     Solução
                   </TabsTrigger>
                   <TabsTrigger
-                    value="praticar" class="text-xs 
+                    value="practice" class="text-xs 
                     data-[state=active]:bg-secondary data-[state=active]:text-black
                     hover:cursor-pointer"
                   >
                     Praticar
                   </TabsTrigger>
                   <TabsTrigger
-                    value="tabela_verdade" class="text-xs
+                    value="truth_table" class="text-xs
                     data-[state=active]:bg-secondary data-[state=active]:text-black
                     hover:cursor-pointer"
                   >
                     Tabela Verdade
                   </TabsTrigger>
                 </TabsList>
-                <TabsContent value="overview">
-                  Overview content
-                </TabsContent>
-                <TabsContent value="analytics">
-                  Analytics content
-                </TabsContent>
-                <TabsContent value="reports">
-                  Reports content
-                </TabsContent>
               </Tabs>
-
-              <Checkbox
-                id="controlled"
-                v-model:checked="checked"
-                class="bg-secondary data-[state=checked]:bg-secondary
-                data-[state=checked]:text-black hover:cursor-pointer"
-              />
-              <Label for="controlled" class="text-white">
-                Exibir exemplos
-              </Label>
             </div>
           </CardHeader>
           <CardContent class="flex flex-col flex-1 min-h-0">
-            <ScrollArea class="flex-1 min-h-0 border-foreground">
+            <ScrollArea
+              v-if="activeTab === 'solution'" class="flex-1 min-h-0
+              border-foreground"
+            >
               <Timeline>
                 <TimelineItem
                   status="completed" v-for="(item, index) in timelineItems"
@@ -419,6 +451,11 @@ async function verifyTruthTable(requestHint = false) {
                 </TimelineItem>
               </Timeline>
             </ScrollArea>
+
+            <TruthTable
+              v-else-if="activeTab === 'truth_table'" :columns="columns"
+              :rows="rows"
+            />
           </CardContent>
         </Card>
       </div>

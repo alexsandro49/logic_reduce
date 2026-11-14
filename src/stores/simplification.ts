@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { Ref, ref } from 'vue';
-import { ReductionStep, ReductionStepAutomatic, StepStruct } from '../utils/types';
+import { ReductionStep, ReductionStepAutomatic, StepStruct, TruthTable, TruthTableRows } 
+  from '../utils/types';
 import { generateRandomExpression } from '../utils/expressionGenerator';
 import { invoke } from '@tauri-apps/api/core';
 
@@ -86,6 +87,31 @@ export const useSimplificationStore = defineStore(
       steps.value = steps.value.filter((_, index) => index !== indexToRemove);
     }
 
+    async function getTruthTable(value: string, columns: Ref<string[]>,
+      rows: Ref<TruthTableRows[]>, compactTable: boolean): 
+      Promise<[string[], TruthTableRows[]]> {
+        
+      if (value == '') {
+        value = placeholder;
+        expression.value = value;
+      }
+
+      try {
+        const table = await invoke<TruthTable>('truth_table_helper', {
+          source: value,
+          display: compactTable ? 'reduced' : 'complete',
+          includeIntermediate: true,
+        });
+
+        columns.value = [...table.inputs, ...table.columns];
+        rows.value = table.rows.map((row) => [...row.inputs, ...row.outputs]);
+
+        return [columns.value, rows.value];
+      } catch (error) {
+        throw new Error('Erro ao gerar tabela', { cause: error });
+      }
+    }
+
     return {
       expression,
       placeholder,
@@ -99,7 +125,8 @@ export const useSimplificationStore = defineStore(
       removeStep,
       stepsAutomatic,
       error,
-      result
+      result,
+      getTruthTable
     };
   }
 );
