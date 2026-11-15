@@ -18,7 +18,7 @@ const props = defineProps<{
     <TableHeader class="bg-primary">
       <TableRow>
         <TableHead
-          class="text-white font-bold text-center"
+          class="text-white font-bold text-lg text-center"
           v-for="(column, columnIndex) in props.columns"
           :key="columnIndex"
         >
@@ -28,11 +28,11 @@ const props = defineProps<{
     </TableHeader>
     <TableBody>
       <TableRow
-        class="odd:bg-secondary" v-for="(row, rowIndex) in props.rows"
+        v-for="(row, rowIndex) in props.rows"
         :key="rowIndex"
       >
         <TableCell
-          class="text-center last:bg-accent last:border-l-2"
+          class="text-center last:bg-secondary last:border-l-2 text-lg font-semibold"
           v-for="(value, valueIndex) in row"
           :key="valueIndex"
         >

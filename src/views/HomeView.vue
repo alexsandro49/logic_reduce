@@ -2,10 +2,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import HeaderComponent from '../components/HeaderComponent.vue';
-import { computed, onMounted, Ref, ref, watch } from 'vue';
+import { computed, Ref, ref, watch } from 'vue';
 import { useConfigStore } from '../stores/config.ts';
-import { PhCopy, PhEraser, PhMagicWand, PhShuffleAngular }
-  from '@phosphor-icons/vue';
+import { PhCheckFat, PhCopy, PhEraser, PhLightbulbFilament, PhMagicWand,
+  PhShuffleAngular } from '@phosphor-icons/vue';
 import { useSimplificationStore } from '../stores/simplification.ts';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { invoke } from '@tauri-apps/api/core';
@@ -20,27 +20,14 @@ import Card from '@/components/ui/Card.vue';
 import CardHeader from '@/components/ui/CardHeader.vue';
 import CardTitle from '@/components/ui/CardTitle.vue';
 import CardContent from '@/components/ui/CardContent.vue';
-import Timeline from '@/components/ui/Timeline.vue';
-import ScrollArea from '@/components/ui/ScrollArea.vue';
-import TimelineItem from '@/components/ui/TimelineItem.vue';
-import TimelineDot from '@/components/ui/TimelineDot.vue';
-import TimelineConnector from '@/components/ui/TimelineConnector.vue';
-import TimelineContent from '@/components/ui/TimelineContent.vue';
-import TimelineTitle from '@/components/ui/TimelineTitle.vue';
-import TimelineDescription from '@/components/ui/TimelineDescription.vue';
-import TimelineCard from '@/components/ui/TimelineCard.vue';
 import Checkbox from '@/components/ui/Checkbox.vue';
 import Label from '@/components/ui/Label.vue';
 import Tabs from '@/components/ui/Tabs.vue';
 import TabsList from '@/components/ui/TabsList.vue';
 import TabsTrigger from '@/components/ui/TabsTrigger.vue';
-import Table from '@/components/ui/Table.vue';
-import TableHeader from '@/components/ui/TableHeader.vue';
-import TableRow from '@/components/ui/TableRow.vue';
-import TableHead from '@/components/ui/TableHead.vue';
-import TableBody from '@/components/ui/TableBody.vue';
-import TableCell from '@/components/ui/TableCell.vue';
 import TruthTable from '@/components/TruthTable.vue';
+import PracticeComponent from '@/components/PracticeComponent.vue';
+import SolutionComponent from '@/components/SolutionComponent.vue';
 
 const configStore = useConfigStore();
 const simplificationStore = useSimplificationStore();
@@ -106,7 +93,12 @@ const timelineItems = [
 ];
 const showExamples = ref(false);
 const compactTable = ref(false);
-const activeTab = ref('solution');
+const activeTab = ref('practice');
+const steps = ref([{ value: '', law: '' }]);
+
+const columns: Ref<string[]> = ref([]);
+const rows: Ref<TruthTableRows[]> = ref([]);
+
 
 watch(() => [
   simplificationStore.steps.map(step => [step.value, step.law]),
@@ -249,7 +241,7 @@ async function verifyTruthTable(requestHint = false) {
             hintMessage.value = completion.next_law
               ? `Tentativa incompleta. Continue com a lei ${completion.next_law}.`
               : 'Os passos estão corretos, '
-                + 'mas a última expressão ainda pode ser simplificada.';
+              + 'mas a última expressão ainda pode ser simplificada.';
           }
         }
       } else {
@@ -268,9 +260,6 @@ async function verifyTruthTable(requestHint = false) {
   }
 }
 
-const columns: Ref<string[]> = ref([]);
-const rows: Ref<TruthTableRows[]> = ref([]);
-
 watch([() => compactTable.value, activeTab], async () => {
   [columns.value, rows.value] =
     await simplificationStore.getTruthTable(simplificationStore.expression, columns,
@@ -280,15 +269,9 @@ watch([() => compactTable.value, activeTab], async () => {
 </script>
 
 <template>
-  <main
-    class="page-shell bg-background"
-    :class="{ dark: configStore.darkTheme }"
-  >
+  <main class="page-shell bg-background" :class="{ dark: configStore.darkTheme }">
     <HeaderComponent :is-manual-view="false" />
-    <section
-      class="workspace"
-      aria-label="Simplificação de expressão booleana"
-    >
+    <section class="workspace" aria-label="Simplificação de expressão booleana">
       <div class="flex min-h-0 gap-4">
         <div class="flex flex-col gap-4 flex-1">
           <Card>
@@ -359,20 +342,41 @@ watch([() => compactTable.value, activeTab], async () => {
             class="bg-primary shrink-0 flex flex-row justify-between
             items-center"
           >
-            <CardTitle class="text-white">
-              Passo a passo
-            </CardTitle>
+            <div class="flex justify-between w-full">
+              <Tabs v-model="activeTab">
+                <TabsList>
+                  <TabsTrigger
+                    value="solution" class="text-xs
+                      data-[state=active]:bg-secondary data-[state=active]:text-black
+                      hover:cursor-pointer"
+                  >
+                    Solução
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="practice" class="text-xs 
+                      data-[state=active]:bg-secondary data-[state=active]:text-black
+                      hover:cursor-pointer"
+                  >
+                    Praticar
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="truth_table" class="text-xs
+                      data-[state=active]:bg-secondary data-[state=active]:text-black
+                      hover:cursor-pointer"
+                  >
+                    Tabela Verdade
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
 
-            <div class="flex items-center gap-2">
               <div
-                class="flex items-center gap-2 w-full"
+                class="flex items-center justify-end gap-2 w-full"
                 v-if="activeTab === 'solution'"
               >
                 <Checkbox
-                  id="controlled"
-                  v-model:checked="showExamples"
+                  id="controlled" v-model:checked="showExamples"
                   class="bg-secondary data-[state=checked]:bg-secondary
-                data-[state=checked]:text-black hover:cursor-pointer"
+                  data-[state=checked]:text-black hover:cursor-pointer"
                 />
                 <Label for="controlled" class="text-white text-sm font-bold">
                   Exibir exemplos
@@ -380,80 +384,38 @@ watch([() => compactTable.value, activeTab], async () => {
               </div>
 
               <div
-                class="flex items-center gap-2 w-full"
-                v-if="activeTab === 'truth_table'"
+                class="flex items-center justify-end gap-2 w-full"
+                v-else-if="activeTab === 'practice'"
               >
+                <Button class="bg-accent text-black" animation="pop">
+                  <PhLightbulbFilament :size="32" weight="fill" />
+                  <p>Dica</p>
+                </Button>
+                <Button class="bg-secondary text-black" animation="pop">
+                  <PhCheckFat :size="32" weight="fill" />
+                  <p>Verificar</p>
+                </Button>
+              </div>
+
+              <div class="flex items-center justify-end gap-2 w-full" v-else>
                 <Checkbox
-                  id="controlled"
-                  v-model:checked="compactTable"
+                  id="controlled" v-model:checked="compactTable"
                   class="bg-secondary data-[state=checked]:bg-secondary
-                data-[state=checked]:text-black hover:cursor-pointer"
+                  data-[state=checked]:text-black hover:cursor-pointer"
                 />
                 <Label for="controlled" class="text-white text-sm font-bold">
                   Tabela compacta
                 </Label>
               </div>
-
-              <Tabs v-model="activeTab">
-                <TabsList>
-                  <TabsTrigger
-                    value="solution" class="text-xs
-                    data-[state=active]:bg-secondary data-[state=active]:text-black
-                    hover:cursor-pointer"
-                  >
-                    Solução
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="practice" class="text-xs 
-                    data-[state=active]:bg-secondary data-[state=active]:text-black
-                    hover:cursor-pointer"
-                  >
-                    Praticar
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="truth_table" class="text-xs
-                    data-[state=active]:bg-secondary data-[state=active]:text-black
-                    hover:cursor-pointer"
-                  >
-                    Tabela Verdade
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
             </div>
           </CardHeader>
           <CardContent class="flex flex-col flex-1 min-h-0">
-            <ScrollArea
-              v-if="activeTab === 'solution'" class="flex-1 min-h-0
-              border-foreground"
-            >
-              <Timeline>
-                <TimelineItem
-                  status="completed" v-for="(item, index) in timelineItems"
-                  :key="item.name"
-                >
-                  <TimelineDot status="current" class="text-white font-bold">
-                    {{ index + 1 }}
-                  </TimelineDot>
-                  <TimelineConnector status="completed" />
-                  <TimelineContent>
-                    <TimelineCard>
-                      <TimelineTitle class="text-lg">
-                        {{ item.name }}
-                      </TimelineTitle>
-                      <TimelineDescription class="text-lg">
-                        {{ item.before }}
-                      </TimelineDescription>
-                      <TimelineDescription class="text-lg font-semibold">
-                        {{ item.after }}
-                      </TimelineDescription>
-                    </TimelineCard>
-                  </TimelineContent>
-                </TimelineItem>
-              </Timeline>
-            </ScrollArea>
+            <SolutionComponent v-if="activeTab === 'solution'" :timeline-items />
 
+            <PracticeComponent v-else-if="activeTab === 'practice'" :steps />
+          
             <TruthTable
-              v-else-if="activeTab === 'truth_table'" :columns="columns"
+              v-else :columns="columns"
               :rows="rows"
             />
           </CardContent>
@@ -474,6 +436,10 @@ watch([() => compactTable.value, activeTab], async () => {
   @apply shrink-0;
 }
 
+.page-shell :deep(button[role="combobox"]) {
+  animation: none;
+}
+
 .workspace {
   @apply grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)] px-8;
   @apply pt-[43px] pb-7 max-[760px]:pt-7;
@@ -489,7 +455,7 @@ watch([() => compactTable.value, activeTab], async () => {
   @apply max-[760px]:grid-rows-[28px_45px_45px_minmax(0,1fr)];
 }
 
-.expression-field > span,
+.expression-field>span,
 .steps-section h1,
 .result-row h2 {
   @apply text-[19px] tracking-[.1px] uppercase;
