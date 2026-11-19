@@ -1,12 +1,17 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { Color } from '../utils/types';
+import { ActiveTab } from '@/utils/shared';
 
 export const useConfigStore = defineStore(
   'config',
   () => {
     const darkTheme = ref(false);
     const currentTheme = ref(0);
+
+    const activeTab = ref(ActiveTab.Solution);
+    const showExamples = ref(false);
+    const compactTable = ref(false);
 
     const themes: Color[][] = [
       [
@@ -119,7 +124,10 @@ export const useConfigStore = defineStore(
       currentTheme,
       nextTheme,
       themeColors,
-      getColor
+      getColor,
+      activeTab,
+      showExamples,
+      compactTable
     };
   },
   {

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useSimplificationStore } from '@/stores/simplification.ts';
 import ScrollArea from './ui/ScrollArea.vue';
 import Timeline from './ui/Timeline.vue';
 import TimelineCard from './ui/TimelineCard.vue';
@@ -9,9 +10,7 @@ import TimelineDot from './ui/TimelineDot.vue';
 import TimelineItem from './ui/TimelineItem.vue';
 import TimelineTitle from './ui/TimelineTitle.vue';
 
-const props = defineProps<{
-  timelineItems: { name: string, before: string, after: string }[];
-}>();
+const simplificationStore = useSimplificationStore();
 </script>
 
 <template>
@@ -21,8 +20,8 @@ const props = defineProps<{
   >
     <Timeline>
       <TimelineItem
-        status="completed" v-for="(item, index) in props.timelineItems"
-        :key="item.name"
+        status="completed" v-for="(item, index) in simplificationStore.stepsAutomatic"
+        :key="item.after"
       >
         <TimelineDot status="current" class="text-white font-bold">
           {{ index + 1 }}

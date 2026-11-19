@@ -1,6 +1,4 @@
 <script setup lang="ts">
-/* eslint-disable vue/max-len */
-
 import {
   ScrollAreaRoot,
   ScrollAreaViewport,
@@ -22,13 +20,13 @@ defineProps<{
     </ScrollAreaViewport>
     <ScrollAreaScrollbar
       orientation="vertical"
-      class="flex touch-none select-none transition-colors h-full w-3 border-l-3 border-l-transparent p-[1px]"
+      class="flex touch-none select-none transition-colors h-full w-3 py-px ps-1 pe-px"
     >
       <ScrollAreaThumb class="relative flex-1 bg-foreground" />
     </ScrollAreaScrollbar>
     <ScrollAreaScrollbar
       orientation="horizontal"
-      class="flex touch-none select-none transition-colors h-3 flex-col border-t-3 border-t-transparent p-[1px]"
+      class="flex touch-none select-none transition-colors h-3 flex-col px-px pt-1 pb-px"
     >
       <ScrollAreaThumb class="relative flex-1 bg-foreground" />
     </ScrollAreaScrollbar>

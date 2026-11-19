@@ -1,9 +1,11 @@
 import { defineStore } from 'pinia';
 import { Ref, ref } from 'vue';
-import { ReductionStep, ReductionStepAutomatic, StepStruct, TruthTable, TruthTableRows } 
+import { ReductionStep, SolutionStep, StepStruct, TruthTable, TruthTableRows } 
   from '../utils/types';
 import { generateRandomExpression } from '../utils/expressionGenerator';
 import { invoke } from '@tauri-apps/api/core';
+import { useConfigStore } from './config';
+import { ActiveTab } from '@/utils/shared';
 
 export const useSimplificationStore = defineStore(
   'simplification',
@@ -29,7 +31,7 @@ export const useSimplificationStore = defineStore(
     const result = ref('');
     const submittedExpression = ref('');
 
-    const stepsAutomatic: Ref<ReductionStepAutomatic[]> = ref([]);
+    const stepsAutomatic: Ref<SolutionStep[]> = ref([]);
 
     async function simplification() {
       const source = expression.value.trim() || placeholder;
@@ -39,6 +41,7 @@ export const useSimplificationStore = defineStore(
       submittedExpression.value = source;
       stepsAutomatic.value = [];
       result.value = '';
+      expression.value = source;
 
       try {
         const [simplifiedExpression, newSteps] = await invoke<[string, StepStruct[]]>(
@@ -47,11 +50,20 @@ export const useSimplificationStore = defineStore(
         );
 
         result.value = simplifiedExpression;
-        stepsAutomatic.value = newSteps.map((step) => ({
-          title: step.law_name,
-          expression: step.after_law,
-          description: 'Regra aplicada durante a simplificação.',
-        }));
+
+
+        let previousState = '';
+        stepsAutomatic.value = newSteps.map((step, index) => {
+          const newStep = {
+            name: step.law_name,
+            before: index === 0 ? submittedExpression.value : previousState,
+            after: step.after_law
+          };
+
+          previousState = step.after_law;
+
+          return newStep;
+        });
       } catch (reason) {
         error.value = typeof reason === 'string' ? reason :
           'Não foi possível simplificar a expressão.';
@@ -74,6 +86,9 @@ export const useSimplificationStore = defineStore(
       stepsAutomatic.value = [];
       result.value = '';
       expression.value = '';
+
+      const configStore = useConfigStore();
+      configStore.activeTab = ActiveTab.Solution;
     }
 
     function addStep() {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-/* eslint-disable vue/max-len */
-/* eslint-disable vue/no-mutating-props */
+ 
+ 
 /* eslint-disable vue/valid-v-for */
 
 import { PhTrash } from '@phosphor-icons/vue';
@@ -18,24 +18,45 @@ import TimelineDescription from './ui/TimelineDescription.vue';
 import TimelineDot from './ui/TimelineDot.vue';
 import TimelineItem from './ui/TimelineItem.vue';
 import ScrollArea from './ui/ScrollArea.vue';
-import { lawsSelect } from '@/utils/shared.ts';
+import { Laws, lawsSelect } from '@/utils/shared.ts';
+import { useSimplificationStore } from '@/stores/simplification.ts';
 
 const props = defineProps<{
-  steps: {value: string, law: string}[];
+  verificationResults: boolean[];
 }>();
+
+const simplificationStore = useSimplificationStore();
+
+function addStep() {
+  simplificationStore.steps.push({value: '', law: Laws.Final});
+}
+
+function removeStep(index: number) {
+  simplificationStore.steps.splice(index, 1);
+}
+
+function selectColorBackgroundHelper(index: number) {
+  if (props.verificationResults[index] === undefined) {
+    return 'bg-none';
+  } else if (props.verificationResults[index] === true) {
+    return 'bg-secondary text-black';
+  } else {
+    return 'bg-destructive';
+  }
+}
 </script>
 
 <template>
-  <ScrollArea
-    class="flex-1 min-h-0
-              border-foreground"
-  >
+  <ScrollArea class="flex-1 min-h-0 pe-4">
     <Timeline>
       <TimelineItem
-        status="completed" v-for="(_, index) in props.steps"
+        status="completed" v-for="(step, index) in simplificationStore.steps"
         :key="index"
       >
-        <TimelineDot status="current" class="text-white font-bold">
+        <TimelineDot
+          status="current" class="text-white font-bold"
+          :class="selectColorBackgroundHelper(index)"
+        >
           {{ index + 1 }}
         </TimelineDot>
         <TimelineConnector status="completed" />
@@ -43,10 +64,10 @@ const props = defineProps<{
           <TimelineDescription class="text-lg flex gap-3">
             <Input
               placeholder="Expressão após esse passo" class="min-w-0 flex-1 font-bold"
-              v-model="props.steps[index].value"
+              v-model="step.value"
             />
 
-            <Select v-model="props.steps[index].law">
+            <Select v-model="step.law">
               <SelectTrigger class="w-44 shrink-0">
                 <SelectValue placeholder="Identidades" class="min-w-0 truncate" />
               </SelectTrigger>
@@ -58,7 +79,7 @@ const props = defineProps<{
             </Select>
 
             <Button
-              class="bg-destructive" @click="props.steps.splice(index, 1)"
+              class="bg-destructive" @click="removeStep(index)"
               animation="pop"
             >
               <PhTrash :size="32" />
@@ -70,7 +91,7 @@ const props = defineProps<{
       <TimelineItem status="completed">
         <TimelineContent>
           <Button
-            class="bg-secondary text-black" @click="props.steps.push({value: '', law: ''})"
+            class="bg-secondary text-black" @click="addStep"
             animation="pop"
           >
             <PhTrash :size="32" weight="fill" />

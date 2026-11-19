@@ -1,6 +1,4 @@
 <script setup lang="ts">
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 import HeaderComponent from '../components/HeaderComponent.vue';
 import { computed, Ref, ref, watch } from 'vue';
 import { useConfigStore } from '../stores/config.ts';
@@ -10,8 +8,7 @@ import { useSimplificationStore } from '../stores/simplification.ts';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { invoke } from '@tauri-apps/api/core';
 import type {
-  EquivalenceResult, ManualCompletion, ManualStepValidation,
-  TruthTableRows,
+  ManualCompletion, ManualStepValidation, TruthTableRows,
 } from '../utils/types.ts';
 import Input from '@/components/ui/Input.vue';
 import ButtonGroup from '@/components/ui/ButtonGroup.vue';
@@ -28,12 +25,12 @@ import TabsTrigger from '@/components/ui/TabsTrigger.vue';
 import TruthTable from '@/components/TruthTable.vue';
 import PracticeComponent from '@/components/PracticeComponent.vue';
 import SolutionComponent from '@/components/SolutionComponent.vue';
+import { ActiveTab } from '@/utils/shared.ts';
 
 const configStore = useConfigStore();
 const simplificationStore = useSimplificationStore();
 
 const copyButtonTittle = ref('COPIAR');
-const automaticSimplification = ref(false);
 
 const isVerifying = ref(false);
 const verificationMessage = ref('');
@@ -44,68 +41,11 @@ const verificationFeedback = computed(() => hintMessage.value
   || verificationError.value || verificationMessage.value);
 let verificationVersion = 0;
 
-const timelineItems = [
-  {
-    name: 'Comutativa',
-    before: '~((~A + B) & (~B + C))',
-    after: '~((B + ~A) & (~B + C))'
-  },
-  {
-    name: 'Comutativa',
-    before: '~((B + ~A) & (~B + C))',
-    after: '~((B + ~A) & (C + ~B))'
-  },
-  {
-    name: 'De Morgan',
-    before: '~((B + ~A) & (C + ~B))',
-    after: '~(B + ~A) + ~(C + ~B)'
-  },
-  {
-    name: 'De Morgan',
-    before: '~(B + ~A) + ~(C + ~B)',
-    after: '~(B & ~~A) + ~(C + ~B)'
-  },
-  {
-    name: 'D. Negação',
-    before: '~(B & ~~A) + ~(C + ~B)',
-    after: '~(B & A) + ~(C + ~B)'
-  },
-  {
-    name: 'Comutativa',
-    before: '(~B & A) + ~(C + ~B)',
-    after: '(A & ~B) + ~(C + ~B)'
-  },
-  {
-    name: 'De Morgan',
-    before: '(A & ~B) + ~(C + ~B)',
-    after: '(A & ~B) + (~C & ~~B)'
-  },
-  {
-    name: 'D. Negação',
-    before: '(A & ~B) + (~C & ~~B)',
-    after: '(A & ~B) + (~C & B)'
-  },
-  {
-    name: 'Comutativa',
-    before: '(A & ~B) + (~C & B)',
-    after: '(A & ~B) + (B & ~C)'
-  },
-];
-const showExamples = ref(false);
-const compactTable = ref(false);
-const activeTab = ref('practice');
-const steps = ref([{ value: '', law: '' }]);
-
 const columns: Ref<string[]> = ref([]);
 const rows: Ref<TruthTableRows[]> = ref([]);
 
 
-watch(() => [
-  simplificationStore.steps.map(step => [step.value, step.law]),
-  automaticSimplification.value,
-  simplificationStore.submittedExpression,
-  simplificationStore.result,
-], () => {
+watch(() => simplificationStore.steps.map(step => [step.value, step.law]), () => {
   verificationVersion++;
   isVerifying.value = false;
   verificationMessage.value = '';
@@ -122,29 +62,14 @@ async function copyResult() {
   }, 1000);
 }
 
-function automaticSimplificationHelper() {
-  simplificationStore.simplification();
-  automaticSimplification.value = !automaticSimplification.value;
-}
-
-async function checkExpression() {
-  if (isVerifying.value || simplificationStore.isSimplifying) return;
-  if (automaticSimplification.value) {
-    await simplificationStore.simplification();
-    if (simplificationStore.error) {
-      verificationError.value = 'Não foi possível simplificar a expressão.';
-      return;
-    }
-  }
-  await verifyTruthTable();
-}
-
-async function verifyTruthTable(requestHint = false) {
+async function verifyManualExpression(requestHint = false) {
   if (isVerifying.value) return;
   verificationMessage.value = '';
   verificationError.value = '';
   hintMessage.value = '';
-  if (!automaticSimplification.value && simplificationStore.steps.length < 2) {
+
+  const steps = simplificationStore.steps;
+  if (steps.length < 2) {
     verificationError.value = 'Passos insuficientes.';
     if (requestHint) {
       hintMessage.value =
@@ -152,13 +77,10 @@ async function verifyTruthTable(requestHint = false) {
     }
     return;
   }
-  const original = automaticSimplification.value
-    ? simplificationStore.submittedExpression
-    : simplificationStore.steps[0].value;
-  const lastStep = simplificationStore.steps[simplificationStore.steps.length - 1];
-  const candidate = automaticSimplification.value
-    ? simplificationStore.result
-    : lastStep.value;
+
+  const original = steps[0].value;
+  const lastStep = steps[steps.length - 1];
+  const candidate = lastStep.value;
   if (!original.trim() || !candidate.trim()) {
     verificationError.value = 'Há expressões vazias.';
     if (requestHint) hintMessage.value = 'Informe as duas expressões antes de verificar.';
@@ -168,102 +90,79 @@ async function verifyTruthTable(requestHint = false) {
   const version = ++verificationVersion;
   isVerifying.value = true;
   try {
-    let results: EquivalenceResult[];
-    let validations: ManualStepValidation[] = [];
-    if (automaticSimplification.value) {
-      results = [await invoke<EquivalenceResult>('verify_equivalence', {
-        original, candidate,
-      })];
-    } else {
-      validations = await Promise.all(
-        simplificationStore.steps.slice(0, -1).map((step, index) =>
-          invoke<ManualStepValidation>('verify_manual_step', {
-            original,
-            previous: step.value,
-            candidate: simplificationStore.steps[index + 1].value,
-            selectedLaw: step.law,
-          }),
-        ),
-      );
-      results = validations.map(validation => validation.equivalence);
-    }
-    if (version !== verificationVersion) return;
-    if (!automaticSimplification.value) {
-      stepVerificationResults.value = simplificationStore.steps.map((step, index) =>
-        (index === 0 || results[index - 1].equivalent)
-        && (index === validations.length
-          ? step.law === 'final' : validations[index].law_valid),
-      );
-    }
-    const firstIncorrectIndex = results.findIndex((result, index) =>
-      !result.equivalent || (!automaticSimplification.value
-        && !validations[index].law_valid),
+    const validations = await Promise.all(
+      steps.slice(0, -1).map((step, index) =>
+        invoke<ManualStepValidation>('verify_manual_step', {
+          original,
+          previous: step.value,
+          candidate: steps[index + 1].value,
+          selectedLaw: step.law,
+        }),
+      ),
     );
-    const resultIndex = firstIncorrectIndex === -1
-      ? results.length - 1 : firstIncorrectIndex;
-    const result = results[resultIndex];
-    if (!result.equivalent) {
-      verificationError.value = 'As expressões não são equivalentes.';
-    }
-    if (!automaticSimplification.value && firstIncorrectIndex !== -1) {
+    if (version !== verificationVersion) return;
+
+    stepVerificationResults.value = steps.map((step, index) =>
+      (index === 0 || validations[index - 1].equivalence.equivalent)
+      && (index === validations.length
+        ? step.law === 'final' : validations[index].law_valid),
+    );
+    const firstIncorrectIndex = validations.findIndex(validation =>
+      !validation.equivalence.equivalent || !validation.law_valid,
+    );
+    if (firstIncorrectIndex !== -1) {
+      const validation = validations[firstIncorrectIndex];
       const stepLabel = `Passo ${firstIncorrectIndex + 1}: `;
-      verificationError.value = stepLabel + (result.equivalent
+      verificationError.value = stepLabel + (validation.equivalence.equivalent
         ? 'lei incorreta.' : 'expressão incorreta.');
-      if (requestHint) {
-        hintMessage.value = stepLabel + validations[firstIncorrectIndex].hint;
-      }
+      if (requestHint) hintMessage.value = stepLabel + validation.hint;
       return;
     }
-    if (!automaticSimplification.value && lastStep.law !== 'final') {
-      verificationError.value = `Passo ${simplificationStore.steps.length}: `
-        + 'conclusão pendente.';
+    if (lastStep.law !== 'final') {
+      const stepLabel = `Passo ${steps.length}: `;
+      verificationError.value = stepLabel + 'conclusão pendente.';
       if (requestHint) {
-        hintMessage.value = `Passo ${simplificationStore.steps.length}: `
+        hintMessage.value = stepLabel
           + 'Selecione a lei FINAL para concluir a simplificação.';
       }
       return;
     }
-    if (result.equivalent) {
-      if (!automaticSimplification.value) {
-        const completion = await invoke<ManualCompletion>('manual_completion', {
-          source: candidate,
-        });
-        if (version !== verificationVersion) return;
-        if (completion.complete) {
-          verificationMessage.value = 'Simplificação concluída.';
-          if (requestHint) {
-            hintMessage.value = 'Simplificação concluída. '
-              + 'As expressões e as leis de todos os passos estão corretas.';
-          }
-        } else {
-          verificationError.value = 'Simplificação incompleta.';
-          if (requestHint) {
-            hintMessage.value = completion.next_law
-              ? `Tentativa incompleta. Continue com a lei ${completion.next_law}.`
-              : 'Os passos estão corretos, '
-              + 'mas a última expressão ainda pode ser simplificada.';
-          }
-        }
-      } else {
-        verificationMessage.value = 'As expressões são equivalentes.';
+
+    const completion = await invoke<ManualCompletion>('manual_completion', {
+      source: candidate,
+    });
+    if (version !== verificationVersion) return;
+    if (completion.complete) {
+      verificationMessage.value = 'Simplificação concluída.';
+      if (requestHint) {
+        hintMessage.value = 'Simplificação concluída. '
+          + 'As expressões e as leis de todos os passos estão corretas.';
+      }
+    } else {
+      verificationError.value = 'Simplificação incompleta.';
+      if (requestHint) {
+        hintMessage.value = completion.next_law
+          ? `Tentativa incompleta. Continue com a lei ${completion.next_law}.`
+          : 'Os passos estão corretos, '
+          + 'mas a última expressão ainda pode ser simplificada.';
       }
     }
   } catch (error) {
     if (version !== verificationVersion) return;
     verificationError.value = 'Não foi possível verificar as expressões.';
     if (requestHint) {
-      hintMessage.value = typeof error === 'string' ? error : error instanceof Error
-        ? error.message : verificationError.value;
+      const detail = error instanceof Error ? error.message : error;
+      if (typeof detail === 'string') hintMessage.value = detail;
     }
   } finally {
     if (version === verificationVersion) isVerifying.value = false;
   }
 }
 
-watch([() => compactTable.value, activeTab], async () => {
+watch([() => configStore.activeTab, () => configStore.compactTable], async () => {
   [columns.value, rows.value] =
     await simplificationStore.getTruthTable(simplificationStore.expression, columns,
-      rows, compactTable.value);
+      rows, configStore.compactTable);
   columns.value[columns.value.length - 1] = 'S';
 });
 </script>
@@ -285,12 +184,15 @@ watch([() => compactTable.value, activeTab], async () => {
                 placeholder="Escreva a expressão original" class="h-20 min-h-20
               placeholder:text-black text-2xl md:text-2xl font-semibold
                 placeholder:text-lg text-black"
+                v-model="simplificationStore.expression"
               />
 
               <ButtonGroup class="flex gap-2">
                 <Button
                   variant="default" animation="pop"
                   class="grow-3 hover:cursor-pointer"
+                  :disabled="simplificationStore.isSimplifying"
+                  @click="simplificationStore.simplification"
                 >
                   <PhMagicWand weight="fill" />
                   Simplificar
@@ -298,6 +200,7 @@ watch([() => compactTable.value, activeTab], async () => {
                 <Button
                   variant="secondary" animation="pop"
                   class="grow hover:cursor-pointer"
+                  @click="simplificationStore.randomExpressionHelper"
                 >
                   <PhShuffleAngular weight="bold" />
                   Exemplo
@@ -305,6 +208,7 @@ watch([() => compactTable.value, activeTab], async () => {
                 <Button
                   variant="accent" animation="pop"
                   class="grow hover:cursor-pointer"
+                  @click="simplificationStore.clearData"
                 >
                   <PhEraser weight="fill" />
                   Limpar
@@ -319,12 +223,12 @@ watch([() => compactTable.value, activeTab], async () => {
                 Resultado
               </CardTitle>
               <CardTitle class="text-white">
-                {{ timelineItems.length }} passos
+                {{ simplificationStore.stepsAutomatic.length }} passos
               </CardTitle>
             </CardHeader>
             <CardContent class="pt-6 flex justify-between items-center">
               <p class="text-2xl font-bold">
-                (~A & ~B) + (B & ~C)
+                {{ simplificationStore.result }}
               </p>
               <Button
                 variant="accent" animation="pop"
@@ -343,24 +247,24 @@ watch([() => compactTable.value, activeTab], async () => {
             items-center"
           >
             <div class="flex justify-between w-full">
-              <Tabs v-model="activeTab">
+              <Tabs v-model="configStore.activeTab">
                 <TabsList>
                   <TabsTrigger
-                    value="solution" class="text-xs
+                    :value="ActiveTab.Solution" class="text-xs
                       data-[state=active]:bg-secondary data-[state=active]:text-black
                       hover:cursor-pointer"
                   >
                     Solução
                   </TabsTrigger>
                   <TabsTrigger
-                    value="practice" class="text-xs 
+                    :value="ActiveTab.Practice" class="text-xs 
                       data-[state=active]:bg-secondary data-[state=active]:text-black
                       hover:cursor-pointer"
                   >
                     Praticar
                   </TabsTrigger>
                   <TabsTrigger
-                    value="truth_table" class="text-xs
+                    :value="ActiveTab.TruthTable" class="text-xs
                       data-[state=active]:bg-secondary data-[state=active]:text-black
                       hover:cursor-pointer"
                   >
@@ -371,10 +275,10 @@ watch([() => compactTable.value, activeTab], async () => {
 
               <div
                 class="flex items-center justify-end gap-2 w-full"
-                v-if="activeTab === 'solution'"
+                v-if="configStore.activeTab === ActiveTab.Solution"
               >
                 <Checkbox
-                  id="controlled" v-model:checked="showExamples"
+                  id="controlled" v-model:checked="configStore.showExamples"
                   class="bg-secondary data-[state=checked]:bg-secondary
                   data-[state=checked]:text-black hover:cursor-pointer"
                 />
@@ -385,13 +289,19 @@ watch([() => compactTable.value, activeTab], async () => {
 
               <div
                 class="flex items-center justify-end gap-2 w-full"
-                v-else-if="activeTab === 'practice'"
+                v-else-if="configStore.activeTab === ActiveTab.Practice"
               >
-                <Button class="bg-accent text-black" animation="pop">
+                <Button
+                  class="bg-accent text-black" animation="pop"
+                  :disabled="isVerifying" @click="verifyManualExpression(true)"
+                >
                   <PhLightbulbFilament :size="32" weight="fill" />
                   <p>Dica</p>
                 </Button>
-                <Button class="bg-secondary text-black" animation="pop">
+                <Button
+                  class="bg-secondary text-black" animation="pop"
+                  :disabled="isVerifying" @click="verifyManualExpression()"
+                >
                   <PhCheckFat :size="32" weight="fill" />
                   <p>Verificar</p>
                 </Button>
@@ -399,7 +309,7 @@ watch([() => compactTable.value, activeTab], async () => {
 
               <div class="flex items-center justify-end gap-2 w-full" v-else>
                 <Checkbox
-                  id="controlled" v-model:checked="compactTable"
+                  id="controlled" v-model:checked="configStore.compactTable"
                   class="bg-secondary data-[state=checked]:bg-secondary
                   data-[state=checked]:text-black hover:cursor-pointer"
                 />
@@ -410,10 +320,18 @@ watch([() => compactTable.value, activeTab], async () => {
             </div>
           </CardHeader>
           <CardContent class="flex flex-col flex-1 min-h-0">
-            <SolutionComponent v-if="activeTab === 'solution'" :timeline-items />
+            <SolutionComponent v-if="configStore.activeTab === ActiveTab.Solution" />
 
-            <PracticeComponent v-else-if="activeTab === 'practice'" :steps />
-          
+            <div v-else-if="configStore.activeTab === ActiveTab.Practice">
+              <p
+                v-if="verificationFeedback"
+                class="mb-2 text-lg" role="status"
+              >
+                {{ verificationFeedback }}
+              </p>
+              <PracticeComponent :verification-results="stepVerificationResults" />
+            </div>
+
             <TruthTable
               v-else :columns="columns"
               :rows="rows"

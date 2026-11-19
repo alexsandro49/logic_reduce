@@ -1,5 +1,11 @@
 import { LawDetails } from './types';
 
+export enum ActiveTab {
+  Solution = 'solution',
+  Practice = 'practice',
+  TruthTable = 'truth_table'
+}
+
 export const lawsSelect = [
   { text: 'IDENTIDADE', value: 'identity' },
   { text: 'DOMINAÇÃO', value: 'null' },
@@ -13,6 +19,20 @@ export const lawsSelect = [
   { text: 'D. NEGAÇÃO', value: 'double_negative' },
   { text: 'FINAL', value: 'final' }
 ];
+
+export enum Laws { 
+  Identidade = 'identity',
+  Dominacao = 'null',
+  Idempotencia = 'idempotent',
+  Complemento = 'complement',
+  Comutativa = 'commutative',
+  Associativa = 'associative',
+  Distributiva = 'distributive',
+  Absorcao = 'absorption',
+  Dmorgan = 'de_morgan',
+  Dnegacao = 'double_negative',
+  Final = 'final'
+};
 
 export const lawsDetails: LawDetails[] = [
   {

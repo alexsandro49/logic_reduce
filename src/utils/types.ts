@@ -1,3 +1,5 @@
+import { Laws } from './shared';
+
 export type LawDetails = { name: string; description: string; examples: string[];
                                                                       notes: string[] };
 export type Color = { color: string, tags: string[] };
@@ -38,13 +40,18 @@ export type TruthTable = {
 
 export type ReductionStep = { value: string; law: string }
 
-export type ReductionStepAutomatic = { 
-  title: string;
-  expression: string;
-  description: string;
-}
-
 export type StepStruct = {
   law_name: string,
   after_law: string
 };
+
+export type SolutionStep = {
+  name: string;
+  before: string;
+  after: string;
+};
+
+export type NewStep = { 
+  value: string;
+  law: Laws;
+}
