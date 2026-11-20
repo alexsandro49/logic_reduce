@@ -72,36 +72,8 @@ function routerHelper(isManualView: boolean) {
   @apply flex h-[38px] w-[38px] flex-[0_0_38px] items-center justify-center overflow-hidden;
 }
 
-.main-navigation {
-  @apply flex flex-wrap items-center gap-[13px];
-}
-
-.navigation-link,
-.icon-button {
-  @apply border-[1.5px] border-solid border-[#222] font-roboto text-[1.1em] font-medium;
-}
-
-.navigation-link {
-  @apply flex min-h-[44px] items-center rounded-[11px] bg-transparent px-[11px] py-0 font-extrabold whitespace-nowrap uppercase no-underline;
-}
-
-.navigation-link:hover,
-.navigation-link:focus-visible,
-.icon-button:hover,
-.icon-button:focus-visible {
-  @apply cursor-pointer;
-}
-
 .header-actions {
   @apply ml-auto flex gap-[13px];
-}
-
-.icon-button {
-  @apply flex relative h-[44px] w-[45px] cursor-pointer items-center justify-center rounded-[11px] p-0;
-}
-
-.tooltip {
-  @apply left-auto right-0;
 }
 
 @media (max-width: 680px) {
@@ -109,24 +81,8 @@ function routerHelper(isManualView: boolean) {
     @apply mx-[10px] mt-[12px] w-[calc(100%_-_20px)] flex-wrap items-start p-[12px];
   }
 
-  .main-navigation {
-    @apply flex-[1_1_calc(100%_-_56px)] gap-[8px];
-  }
-
-  .navigation-link {
-    @apply min-h-[38px] px-[8px] py-0 text-[14px];
-  }
-
   .header-actions {
     @apply order-3 ml-auto w-full;
-  }
-
-  .icon-button {
-    @apply h-[38px] w-[40px];
-  }
-
-  .tooltip {
-    @apply right-auto left-0;
   }
 }
 </style>

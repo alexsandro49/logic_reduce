@@ -88,7 +88,9 @@ export const useSimplificationStore = defineStore(
       expression.value = '';
 
       const configStore = useConfigStore();
-      configStore.activeTab = ActiveTab.Solution;
+      if (configStore.activeTab === ActiveTab.Practice) {
+        configStore.activeTab = ActiveTab.Solution;
+      }
     }
 
     function addStep() {

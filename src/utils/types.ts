@@ -2,7 +2,6 @@ import { Laws } from './shared';
 
 export type LawDetails = { name: string; description: string; examples: string[];
                                                                       notes: string[] };
-export type Color = { color: string, tags: string[] };
 
 export type TruthTableRows = number[];
 

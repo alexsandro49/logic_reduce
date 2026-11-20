@@ -32,7 +32,8 @@ const props = defineProps<{
         :key="rowIndex"
       >
         <TableCell
-          class="text-center last:bg-secondary last:border-l-2 text-lg font-semibold"
+          class="text-center last:bg-secondary last:border-l-2 last:text-background-dark
+            text-lg font-semibold"
           v-for="(value, valueIndex) in row"
           :key="valueIndex"
         >

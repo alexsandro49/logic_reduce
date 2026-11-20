@@ -159,7 +159,8 @@ async function verifyManualExpression(requestHint = false) {
   }
 }
 
-watch([() => configStore.activeTab, () => configStore.compactTable], async () => {
+watch([() => simplificationStore.expression, () => configStore.activeTab,
+  () => configStore.compactTable], async () => {
   [columns.value, rows.value] =
     await simplificationStore.getTruthTable(simplificationStore.expression, columns,
       rows, configStore.compactTable);
@@ -175,15 +176,15 @@ watch([() => configStore.activeTab, () => configStore.compactTable], async () =>
         <div class="flex flex-col gap-4 flex-1">
           <Card>
             <CardHeader class="bg-primary">
-              <CardTitle class="text-white">
+              <CardTitle class="text-background-light">
                 Expressão Booleana
               </CardTitle>
             </CardHeader>
             <CardContent class="pt-6 flex flex-col gap-4">
               <Input
                 placeholder="Escreva a expressão original" class="h-20 min-h-20
-              placeholder:text-black text-2xl md:text-2xl font-semibold
-                placeholder:text-lg text-black"
+              placeholder:text-background-inverted text-2xl md:text-2xl font-semibold
+                placeholder:text-lg text-background-inverted"
                 v-model="simplificationStore.expression"
               />
 
@@ -219,15 +220,15 @@ watch([() => configStore.activeTab, () => configStore.compactTable], async () =>
 
           <Card>
             <CardHeader class="bg-primary flex flex-row justify-between">
-              <CardTitle class="text-white">
+              <CardTitle class="text-background-light">
                 Resultado
               </CardTitle>
-              <CardTitle class="text-white">
+              <CardTitle class="text-background-light">
                 {{ simplificationStore.stepsAutomatic.length }} passos
               </CardTitle>
             </CardHeader>
             <CardContent class="pt-6 flex justify-between items-center">
-              <p class="text-2xl font-bold">
+              <p class="text-2xl font-bold text-background-inverted">
                 {{ simplificationStore.result }}
               </p>
               <Button
@@ -282,7 +283,7 @@ watch([() => configStore.activeTab, () => configStore.compactTable], async () =>
                   class="bg-secondary data-[state=checked]:bg-secondary
                   data-[state=checked]:text-black hover:cursor-pointer"
                 />
-                <Label for="controlled" class="text-white text-sm font-bold">
+                <Label for="controlled" class="text-background-light text-sm font-bold">
                   Exibir exemplos
                 </Label>
               </div>
@@ -313,7 +314,7 @@ watch([() => configStore.activeTab, () => configStore.compactTable], async () =>
                   class="bg-secondary data-[state=checked]:bg-secondary
                   data-[state=checked]:text-black hover:cursor-pointer"
                 />
-                <Label for="controlled" class="text-white text-sm font-bold">
+                <Label for="controlled" class="text-background-light text-sm font-bold">
                   Tabela compacta
                 </Label>
               </div>
@@ -361,102 +362,5 @@ watch([() => configStore.activeTab, () => configStore.compactTable], async () =>
 .workspace {
   @apply grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)] px-8;
   @apply pt-[43px] pb-7 max-[760px]:pt-7;
-}
-
-.controls-row {
-  @apply grid h-[120px] shrink-0 grid-cols-[367px_auto_minmax(0,1fr)];
-  @apply grid-rows-[28px_minmax(0,1fr)];
-  @apply items-center gap-x-3.5 gap-y-[7px];
-  @apply max-[1100px]:h-[168px] max-[1100px]:grid-cols-[minmax(0,1fr)_auto];
-  @apply max-[1100px]:grid-rows-[28px_45px_minmax(0,1fr)];
-  @apply max-[760px]:h-[264px] max-[760px]:grid-cols-1;
-  @apply max-[760px]:grid-rows-[28px_45px_45px_minmax(0,1fr)];
-}
-
-.expression-field>span,
-.steps-section h1,
-.result-row h2 {
-  @apply text-[19px] tracking-[.1px] uppercase;
-}
-
-.expression-field {
-  @apply row-span-2 grid min-w-0 grid-rows-subgrid items-center self-stretch gap-[7px];
-}
-
-.expression-field input {
-  @apply min-w-0 w-full;
-}
-
-.action-controls {
-  @apply col-start-2 row-start-2 flex items-center gap-[13px];
-  @apply max-[760px]:col-start-1 max-[760px]:row-start-3;
-}
-
-.verification-controls {
-  @apply col-start-3 row-start-2 flex h-full min-h-0 min-w-0;
-  @apply items-center justify-end gap-[13px];
-  @apply max-[1100px]:col-span-full max-[1100px]:col-start-1;
-  @apply max-[1100px]:row-start-3 max-[760px]:row-start-4 max-[760px]:flex-wrap;
-  @apply max-[760px]:content-center;
-}
-
-.verification-feedback {
-  @apply min-h-0 max-h-full min-w-0 max-w-lg flex-1 overflow-y-auto;
-  @apply text-right text-[19px] leading-snug wrap-anywhere;
-  @apply max-[760px]:basis-full max-[760px]:max-w-none max-[760px]:text-left;
-  @apply max-[760px]:max-h-[calc(100%_-_58px)];
-}
-
-.ufal-button-img {
-  @apply w-10 h-10 cursor-pointer
-}
-
-.font-text {
-  @apply font-black
-}
-
-.steps-section {
-  @apply grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden;
-}
-
-.bottom-row {
-  @apply grid min-h-[72px] shrink-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-7;
-  @apply max-[1100px]:grid-cols-1 max-[1100px]:gap-0;
-}
-
-.result-row {
-  @apply flex min-w-0 flex-wrap items-center gap-[7px] pl-8;
-  @apply max-[1100px]:min-h-[72px] max-[1100px]:px-8;
-}
-
-.result-row h2 {
-  @apply whitespace-nowrap;
-}
-
-.result-value {
-  @apply flex h-[31px] min-w-[192px] max-w-full items-center overflow-x-auto text-[13px];
-}
-
-.copy-button {
-  @apply relative flex h-7 w-[25px] items-center justify-center border-0 bg-transparent p-0 text-[22px] hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 cursor-pointer;
-}
-
-.tooltip-end {
-  @apply left-auto right-0;
-}
-
-.page-footer {
-  @apply col-start-2 flex min-h-[72px] items-center justify-self-end gap-7;
-  @apply rounded-tl-[19px] rounded-br-[19px] border-[1.5px] border-r-0 border-b-0;
-  @apply py-0 pr-[27px] pl-4 max-[1100px]:col-start-1;
-  @apply max-[760px]:gap-2.5 max-[760px]:px-3;
-}
-
-.page-footer strong {
-  @apply text-[36px] leading-none font-black;
-}
-
-.page-footer button {
-  @apply w-[59px];
 }
 </style>
